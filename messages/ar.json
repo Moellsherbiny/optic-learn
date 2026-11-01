@@ -4,7 +4,11 @@
       "about": "عن المنصة",
       "features": "تجربة التعلم",
       "journey": "رحلتك التعليمية",
-      "signIn": "تسجيل الدخول"
+      "signIn": "تسجيل الدخول",
+      "brand":{
+        "first":"Optic",
+        "second":"Learn"
+      }
     },
     "hero": {
       "eyebrow": "طريقة مختلفة للتعلم",
@@ -47,8 +51,7 @@
       "cta": "ابدأ الاستكشاف"
     },
     "footer": {
-      "description": "تجربة تعليمية تنطلق من الفضول وتقود إلى الاكتشاف."
-    }
+"description": "رحلتك نحو تعلم أفضل."    }
   },
   "nav": {
     "home": "الرئيسية",
@@ -581,12 +584,24 @@
     "removeQuestion": "حذف السؤال"
   },
   "Sidebar": {
+      "title": "القائمة الجانبية",
+    "description": "التنقل بين أقسام التطبيق.",
+    "toggle": "فتح أو إغلاق القائمة الجانبية",
     "home": "الرئيسية",
     "courses": "الدورات",
-    "myCourses": "دوراتي التدريبية",
+    
     "quizzes": "الاختبارات",
+   
+     "workspace": "مساحة العمل",
+    "account": "الحساب",
+    "tagline": "بيئة تعلم تفاعلية",
+    "myCourses": "كورساتي",
+  
+    "myQuizAttempts": "سجل المحاولات",
+  
+    "settings": "الملف الشخصي والإعدادات",
     "leaderboard": "المتصدرين",
-    "settings": "الاعدادات",
+   
     "logout": "تسجيل الخروج",
     "dashboard": "لوحة التحكم",
     "sendMessage": "ارسال رسالة",
@@ -656,6 +671,9 @@
     "yourProgress": "تقدمك الحالي",
     "lessonsCompleted": "دروس مكتملة",
     "enrolledBadge": "تم الاشتراك",
+      "createdAtLabel": "تاريخ الإنشاء",
+  "limitedSeats": "أماكن محدودة",
+  "curriculumDescription": "اتبع المسار التعليمي المنظم لإتقان هذا المقرر",
     "enrollNow": "اشترك الآن",
     "signInToEnroll": "سجل دخول للاشتراك",
     "freeEnrollment": "هذه الدورة مجانية لجميع الطلاب.",
@@ -1039,5 +1057,176 @@
     "score": "الدرجة",
     "no_enrollments": "لم تنضم إلى أي مقرر بعد.",
     "watch_hologram": "شاهد على الجهاز"
+  },
+  
+  "QuizAttempt": {
+    "question": "السؤال",
+    "questionOf": "{current} من {total}",
+    "questionNumber": "السؤال {number}",
+    "totalQuestions": "من أصل {total} سؤال",
+    "answered": "تمت الإجابة",
+    "instructions": "اختر الإجابة الصحيحة",
+    "selectHint": "اختر إجابة واحدة للمتابعة.",
+    "previous": "السابق",
+    "next": "التالي",
+    "submit": "تسليم الاختبار",
+    "submitting": "جارٍ تسليم الاختبار...",
+    "finish": "إنهاء",
+    "answeredStatus": "تمت الإجابة",
+    "pendingStatus": "بانتظار إجابتك",
+    "unansweredWarning": "لا تزال هناك {count} أسئلة بدون إجابة. يرجى إكمال جميع الأسئلة.",
+    "unansweredCount": "متبقي {count} أسئلة بدون إجابة",
+    "submitError": "حدث خطأ أثناء تسليم الاختبار.",
+    "emptyTitle": "الاختبار غير متاح",
+    "emptyDescription": "لا توجد أسئلة في هذا الاختبار حاليًا.",
+    "navigatorTitle": "التنقل بين الأسئلة",
+    "navigatorDescription": "يمكنك الانتقال إلى أي سؤال مباشرة.",
+    "legendCurrent": "السؤال الحالي",
+    "legendAnswered": "تمت الإجابة",
+    "legendUnanswered": "لم تتم الإجابة",
+    "answeredSummary": "تمت الإجابة عن {answered} من أصل {total} سؤال",
+    "reviewHint": "راجع إجاباتك قبل تسليم الاختبار.",
+    "completeAllHint": "أجب عن جميع الأسئلة قبل التسليم."
+  },
+  
+  "QuizIntro": {
+    "dashboard": "لوحة التحكم",
+    "breadcrumb": "مسار التنقل",
+    "courses": "الكورسات",
+    "quizBadge": "اختبار تعليمي",
+    "completedBadge": "تم إكمال الاختبار",
+    "defaultDescription": "اختبر معلوماتك واكتشف مستوى فهمك للمحتوى التعليمي.",
+    "quizInformation": "معلومات الاختبار",
+    "overview": "نظرة عامة على الاختبار",
+    "statistics": {
+      "questions": "عدد الأسئلة",
+      "questionUnit": "سؤال",
+      "estimatedTime": "الوقت المتوقع",
+      "minutes": "دقيقة تقريباً",
+      "yourScore": "نتيجتك",
+      "achievedScore": "النتيجة المحققة",
+      "notStarted": "لم تبدأ بعد"
+    },
+    "beforeStarting": "قبل أن تبدأ",
+    "beforeStartingDescription": "إليك بعض المعلومات المهمة قبل أداء الاختبار.",
+    "rules": {
+      "singleAttempt": {
+        "title": "محاولة واحدة",
+        "description": "يمكنك أداء هذا الاختبار مرة واحدة فقط."
+      },
+      "correctAnswer": {
+        "title": "اختر الإجابة الصحيحة",
+        "description": "يحتوي كل سؤال على إجابة صحيحة واحدة."
+      },
+      "review": {
+        "title": "راجع إجاباتك",
+        "description": "يمكنك مراجعة إجاباتك بعد تسليم الاختبار."
+      },
+      "progress": {
+        "title": "تابع تقدمك",
+        "description": "تُضاف نتيجتك إلى لوحة المتصدرين."
+      }
+    },
+    "completedTitle": "الاختبار مكتمل",
+    "completedHeading": "أحسنت! لقد أنهيت الاختبار.",
+    "completedDescription": "يمكنك الآن مراجعة إجاباتك والاطلاع على نتيجتك.",
+    "finalScore": "نتيجتك النهائية",
+    "reviewAnswers": "مراجعة الإجابات",
+    "readyTitle": "جاهز للبدء؟",
+    "readyHeading": "حان وقت اختبار معلوماتك!",
+    "readyDescription": "خذ وقتك في قراءة الأسئلة واختر الإجابة التي تراها صحيحة.",
+    "actionInfo": {
+      "questions": "الأسئلة",
+      "questionCount": "{count} سؤال",
+      "estimatedTime": "الوقت المتوقع",
+      "minuteCount": "{count} دقيقة",
+      "attempts": "عدد المحاولات",
+      "singleAttempt": "مرة واحدة"
+    },
+    "startQuiz": "ابدأ الاختبار",
+    "goodLuck": "بالتوفيق! أنت قادر على تحقيق أفضل نتيجة.",
+    "tip": "اقرأ كل سؤال بعناية قبل اختيار إجابتك. يمكنك مراجعة إجاباتك بعد تسليم الاختبار.",
+    "footer": "Optic Learn · تعلم وتقدم بالسرعة التي تناسبك."
+  },
+  
+  "QuizResults": {
+    "backToCourse": "العودة إلى الكورس",
+    "completedBadge": "تم إكمال الاختبار",
+    "title": "نتيجتك أصبحت جاهزة!",
+    "description": "لقد أرسلت إجابات الاختبار بنجاح. إليك ملخصًا لأدائك.",
+    "quizLabel": "الاختبار",
+    "questionCount": "{count} سؤال",
+    "scoreLabel": "نتيجتك",
+    "submitted": "تم التسليم بنجاح",
+    "summaryTitle": "ملخص الأداء",
+    "summaryDescription": "نظرة سريعة على نتيجة الاختبار.",
+    "scoreDescription": "النتيجة النهائية للاختبار.",
+    "totalQuestions": "إجمالي الأسئلة",
+    "questionsDescription": "عدد الأسئلة الموجودة في الاختبار.",
+    "nextStepTitle": "واصل رحلتك التعليمية",
+    "nextStepDescription": "ارجع إلى الكورس واستكمل التعلم بالسرعة التي تناسبك.",
+    "dashboard": "لوحة التحكم"
+  },
+
+  
+  "QuizAttempts": {
+    "backToDashboard": "العودة إلى لوحة التحكم",
+    "title": "محاولات الاختبارات",
+    "description": "تابع سجل اختباراتك وراجع نتائج محاولاتك السابقة.",
+    "totalAttempts": "إجمالي المحاولات",
+    "averageScore": "متوسط الدرجات",
+    "historyTitle": "سجل المحاولات",
+    "historyDescription": "اختباراتك مرتبة من الأحدث إلى الأقدم.",
+    "emptyTitle": "لا توجد محاولات حتى الآن",
+    "emptyDescription": "لم تكمل أي اختبار بعد. ابدأ التعلم وستظهر نتائج اختباراتك هنا.",
+    "browseCourses": "استعرض الكورسات",
+    "latest": "الأحدث",
+    "completed": "تم التسليم",
+    "score": "النتيجة"
+  },
+
+  "Chat": {
+    "title": "المحادثات",
+    "description": "ابقَ على تواصل مع المعلمين والطلاب.",
+    "conversations": "المحادثات",
+    "conversationCount": "عدد المحادثات: {count}",
+    "unknownUser": "مستخدم غير معروف",
+    "noMessages": "لا توجد رسائل بعد. ابدأ المحادثة!",
+    "newConversation": "محادثة جديدة",
+    "openConversationWith": "فتح المحادثة مع {name}",
+    "errors": {
+      "loadUsers": "تعذر تحميل المستخدمين. حاول مرة أخرى.",
+      "loadChats": "تعذر تحميل المحادثات. حاول مرة أخرى.",
+      "createChat": "تعذر إنشاء المحادثة.",
+      "deleteChat": "تعذر حذف المحادثة."
+    },
+    "empty": {
+      "title": "لا توجد محادثات حتى الآن",
+      "teacherDescription": "ابدأ محادثة مع أحد طلابك لمساعدته في رحلته التعليمية.",
+      "studentDescription": "ابدأ محادثة مع معلمك إذا كنت بحاجة إلى مساعدة أو لديك سؤال."
+    },
+    "create": {
+      "title": "بدء محادثة جديدة",
+      "description": "اختر الشخص الذي تريد بدء محادثة معه.",
+      "searchPlaceholder": "ابحث بالاسم أو البريد الإلكتروني...",
+      "noUsersAvailable": "لا يوجد مستخدمون متاحون للمحادثة.",
+      "noUsersFound": "لا توجد نتائج تطابق بحثك.",
+      "availableUsers": "المستخدمون المتاحون",
+      "footer": "اختر مستخدمًا لفتح المحادثة."
+    },
+    "delete": {
+      "buttonLabel": "حذف المحادثة",
+      "title": "حذف المحادثة؟",
+      "description": "هل أنت متأكد أنك تريد حذف هذه المحادثة؟ لا يمكن التراجع عن هذا الإجراء.",
+      "confirm": "حذف المحادثة",
+      "deleting": "جارٍ الحذف...",
+      "cancel": "إلغاء",
+      "success": "تم حذف المحادثة بنجاح."
+    }
   }
+
+
+
+
+
 }

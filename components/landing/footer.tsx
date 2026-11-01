@@ -7,21 +7,25 @@ export async function Footer() {
   const t = await getTranslations("LandingPage");
 
   return (
-    <footer className="border-t border-border">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-5 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-8 lg:px-12">
-        <Link href={`/${locale}`} className="flex w-fit items-center gap-2" aria-label="Optic Learn">
-          <span className="flex size-7 items-center justify-center rounded-full border border-foreground/30">
-            <Circle className="size-4 text-primary" strokeWidth={2} aria-hidden="true" />
-          </span>
-          <span className="text-sm font-semibold tracking-tight">optic learn</span>
+    <footer className="mt-auto border-t border-border/60 bg-background">
+      <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-5 px-4 py-6 sm:px-8 md:grid-cols-3 md:items-center lg:px-12">
+        {/* Brand */}
+        <Link
+          href={`/${locale}`}
+          className="flex w-fit items-center gap-2.5"
+          aria-label="Optic Learn home"
+        >
+          <Circle className="size-6 text-primary" />
         </Link>
 
-        <p className="max-w-2xl text-xs leading-6 text-muted-foreground">
+        {/* Description */}
+        <p className="max-w-md text-xs leading-relaxed text-muted-foreground md:justify-self-center md:text-center">
           {t("footer.description")}
         </p>
 
-        <p className="shrink-0 text-xs text-muted-foreground">
-          © {new Date().getFullYear()} Optic Learn
+        {/* Copyright */}
+        <p className="text-xs text-muted-foreground md:justify-self-end">
+          © {new Date().getFullYear()} Optic Learn. All rights reserved.
         </p>
       </div>
     </footer>

@@ -8,7 +8,11 @@
       "about": "About",
       "features": "Learning experience",
       "journey": "Your journey",
-      "signIn": "Sign in"
+      "signIn": "Sign in",
+      "brand":{
+        "first":"Optic",
+        "second":"Learn"
+      }
     },
     "hero": {
       "eyebrow": "A THOUGHTFUL WAY TO LEARN",
@@ -51,7 +55,7 @@
       "cta": "Start exploring"
     },
     "footer": {
-      "description": "A learning experience built on curiosity and discovery."
+      "description": "Your journey to better learning."
     }
   },
   "nav": {
@@ -565,8 +569,15 @@
     "removeQuestion": "Remove Question"
   },
   "Sidebar": {
+     "title": "Navigation sidebar",
+    "description": "Navigate through the application sections.",
+    "toggle": "Toggle sidebar",
     "home": "Home",
+       "workspace": "Workspace",
+    "account": "Account",
+    "tagline": "Interactive Learning",
     "courses": "Courses",
+    "myQuizAttempts": "Quiz Attempts",
     "myCourses": "My Courses",
     "quizzes": "Quizzes",
     "leaderboard": "Leaderboard",
@@ -638,6 +649,9 @@
     "modules": "Modules",
     "done": "Done",
     "dept": "Faculty of Specific Education · CS Dept",
+     "createdAtLabel": "Created",
+  "limitedSeats": "Limited Seats",
+  "curriculumDescription": "Follow the structured path to master this subject",
     "pageTitle": "Courses",
     "pageSubtitle": "Learn through hologram projection and augmented reality",
     "searchPlaceholder": "Search courses...",
@@ -645,6 +659,7 @@
     "enrolled": "Enrolled",
     "notEnrolled": "Not Enrolled",
     "students": "students",
+    
     "statTotal": "Total Courses",
     "statEnrolled": "Enrolled In",
     "statStudents": "Total Students",
@@ -719,6 +734,7 @@
       "new": "New Course",
       "empty": "No courses yet. Create your first one!",
       "modules": "{count} modules",
+      "done": "Done",
       "enrollments": "{count} students",
       "edit": "Edit",
       "delete": "Delete",
@@ -1009,5 +1025,171 @@
     "overallProgress": "Learning Progress",
     "continueLearning": "Continue Learning",
     "startLesson": "Start Lesson"
+  },
+  
+  "QuizAttempt": {
+    "question": "Question",
+    "questionOf": "{current} of {total}",
+    "questionNumber": "Question {number}",
+    "totalQuestions": "of {total} questions",
+    "answered": "Answered",
+    "instructions": "Choose the correct answer",
+    "selectHint": "Select one answer to continue.",
+    "previous": "Previous",
+    "next": "Next",
+    "submit": "Submit quiz",
+    "submitting": "Submitting...",
+    "finish": "Finish",
+    "answeredStatus": "Answered",
+    "pendingStatus": "Awaiting your answer",
+    "unansweredWarning": "You still have {count} unanswered question(s). Please complete all questions.",
+    "unansweredCount": "{count} question(s) unanswered",
+    "submitError": "Something went wrong while submitting the quiz.",
+    "emptyTitle": "Quiz unavailable",
+    "emptyDescription": "There are no questions in this quiz yet.",
+    "navigatorTitle": "Question navigator",
+    "navigatorDescription": "Jump to any question directly.",
+    "legendCurrent": "Current question",
+    "legendAnswered": "Answered",
+    "legendUnanswered": "Not answered",
+    "answeredSummary": "{answered} of {total} questions answered",
+    "reviewHint": "Review your answers before submitting.",
+    "completeAllHint": "Answer all questions before submitting."
+  },
+
+  "QuizIntro": {
+    "dashboard": "Dashboard",
+    "breadcrumb": "Breadcrumb",
+    "courses": "Courses",
+    "quizBadge": "Learning Quiz",
+    "completedBadge": "Quiz Completed",
+    "defaultDescription": "Test your knowledge and discover how well you understand the learning material.",
+    "quizInformation": "Quiz information",
+    "overview": "Quiz Overview",
+    "statistics": {
+      "questions": "Questions",
+      "questionUnit": "Questions",
+      "estimatedTime": "Estimated time",
+      "minutes": "Minutes approx.",
+      "yourScore": "Your score",
+      "achievedScore": "Achieved score",
+      "notStarted": "Not started yet"
+    },
+    "beforeStarting": "Before you start",
+    "beforeStartingDescription": "Here are some important things to know before taking the quiz.",
+    "rules": {
+      "singleAttempt": {
+        "title": "One attempt only",
+        "description": "You can take this quiz only once."
+      },
+      "correctAnswer": {
+        "title": "Choose the correct answer",
+        "description": "Each question has only one correct answer."
+      },
+      "review": {
+        "title": "Review your answers",
+        "description": "You can review your answers after submitting the quiz."
+      },
+      "progress": {
+        "title": "Track your progress",
+        "description": "Your score will be added to the leaderboard."
+      }
+    },
+    "completedTitle": "Quiz completed",
+    "completedHeading": "Well done! You've completed the quiz.",
+    "completedDescription": "You can now review your answers and check your result.",
+    "finalScore": "Your final score",
+    "reviewAnswers": "Review answers",
+    "readyTitle": "Ready to begin?",
+    "readyHeading": "It's time to test your knowledge!",
+    "readyDescription": "Take your time reading each question and choose the answer you think is correct.",
+    "actionInfo": {
+      "questions": "Questions",
+      "questionCount": "{count} questions",
+      "estimatedTime": "Estimated time",
+      "minuteCount": "{count} minutes",
+      "attempts": "Attempts allowed",
+      "singleAttempt": "One attempt"
+    },
+    "startQuiz": "Start quiz",
+    "goodLuck": "Good luck! Do your best.",
+    "tip": "Read each question carefully before selecting your answer. You can review your answers after submitting the quiz.",
+    "footer": "Optic Learn · Learn and progress at your own pace."
+  },
+  
+  "QuizResults": {
+    "backToCourse": "Back to course",
+    "completedBadge": "Quiz completed",
+    "title": "Your results are ready!",
+    "description": "You've successfully submitted your quiz. Here's an overview of your performance.",
+    "quizLabel": "Quiz",
+    "questionCount": "{count} questions",
+    "scoreLabel": "Your score",
+    "submitted": "Successfully submitted",
+    "summaryTitle": "Performance summary",
+    "summaryDescription": "A quick overview of your quiz results.",
+    "scoreDescription": "Your final quiz score.",
+    "totalQuestions": "Total questions",
+    "questionsDescription": "Questions included in this quiz.",
+    "nextStepTitle": "Keep your learning journey going",
+    "nextStepDescription": "Return to your course and continue learning at your own pace.",
+    "dashboard": "Dashboard"
+  },
+
+  
+  "QuizAttempts": {
+    "backToDashboard": "Back to dashboard",
+    "title": "Quiz Attempts",
+    "description": "Keep track of your quiz history and review your previous results.",
+    "totalAttempts": "Total attempts",
+    "averageScore": "Average score",
+    "historyTitle": "Attempt history",
+    "historyDescription": "Your quizzes, from most recent to oldest.",
+    "emptyTitle": "No attempts yet",
+    "emptyDescription": "You haven't completed any quizzes yet. Start learning and your results will appear here.",
+    "browseCourses": "Browse courses",
+    "latest": "Latest",
+    "completed": "Submitted",
+    "score": "Score"
+  },
+  
+  "Chat": {
+    "title": "Messages",
+    "description": "Stay connected with your teachers and students.",
+    "conversations": "Conversations",
+    "conversationCount": "{count} conversations",
+    "unknownUser": "Unknown user",
+    "noMessages": "No messages yet. Start the conversation!",
+    "newConversation": "New conversation",
+    "openConversationWith": "Open conversation with {name}",
+    "errors": {
+      "loadUsers": "Unable to load users. Please try again.",
+      "loadChats": "Unable to load conversations. Please try again.",
+      "createChat": "Unable to create the conversation.",
+      "deleteChat": "Unable to delete the conversation."
+    },
+    "empty": {
+      "title": "No conversations yet",
+      "teacherDescription": "Start a conversation with one of your students to help them with their learning journey.",
+      "studentDescription": "Start a conversation with your teacher if you need help or have a question."
+    },
+    "create": {
+      "title": "Start a new conversation",
+      "description": "Choose someone you would like to start a conversation with.",
+      "searchPlaceholder": "Search by name or email...",
+      "noUsersAvailable": "There are no users available to chat with.",
+      "noUsersFound": "No users match your search.",
+      "availableUsers": "Available users",
+      "footer": "Select a user to open your conversation."
+    },
+    "delete": {
+      "buttonLabel": "Delete conversation",
+      "title": "Delete conversation?",
+      "description": "Are you sure you want to delete this conversation? This action cannot be undone.",
+      "confirm": "Delete conversation",
+      "deleting": "Deleting...",
+      "cancel": "Cancel",
+      "success": "Conversation deleted successfully."
+    }
   }
 }

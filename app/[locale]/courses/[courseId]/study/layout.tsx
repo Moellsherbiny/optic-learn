@@ -4,6 +4,7 @@ import { getStudyPageData } from "@/actions/study";
 import { StudySidebar } from "@/components/study/StudySidebar";
 import { StudyHeader } from "@/components/study/StudyHeader";
 import { PreQuizRequired } from "@/components/study/preQuizReq";
+
 interface Props {
   children: React.ReactNode;
   params: Promise<{ courseId: string }>;
@@ -12,33 +13,33 @@ interface Props {
 export default async function StudyLayout({ children, params }: Props) {
   const { courseId } = await params;
 
-  // We fetch without a specific lessonId here; sidebar only needs course + modules
+  // Fetch course and modules data for the study sidebar.
   const result = await getStudyPageData(courseId);
 
   if (!result.success) {
-  if (result.error === "PRE_QUIZ_REQUIRED") {
-    return (
-      <PreQuizRequired
-        quizId={result.preQuiz!.id}
-        title={result.preQuiz!.title}
-        courseId={courseId}
-      />
-    );
-  }
+    if (result.error === "PRE_QUIZ_REQUIRED") {
+      return (
+        <PreQuizRequired
+          quizId={result.preQuiz!.id}
+          title={result.preQuiz!.title}
+          courseId={courseId}         />
+      );
+    }
 
-  redirect(`/courses/${courseId}`);
-}
+    redirect(`/courses/${courseId}`);
+  }
 
   const { course, modules } = result.data;
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-[#0F1117]">
-      {/* Top bar */}
-      <StudyHeader course={course} />
+    <div className="flex h-dvh flex-col overflow-hidden bg-background text-foreground">
+      {/* Study header */}
+      <StudyHeader course={course} modules={modules} />
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar — hidden on mobile, visible md+ */}
-        <aside className="hidden md:flex w-80 lg:w-96 shrink-0 flex-col border-r border-white/5 overflow-y-auto bg-[#13151C]">
+      {/* Study workspace */}
+      <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden">
+        {/* Course sidebar */}
+        <aside className="hidden w-80 shrink-0 flex-col overflow-y-auto border-e border-border bg-sidebar md:flex lg:w-96">
           <StudySidebar
             courseId={courseId}
             modules={modules}
@@ -48,8 +49,10 @@ export default async function StudyLayout({ children, params }: Props) {
           />
         </aside>
 
-        {/* Main content */}
-        <main className="flex-1 overflow-y-auto">{children}</main>
+        {/* Lesson content */}
+        <main className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto bg-background">
+          {children}
+        </main>
       </div>
     </div>
   );

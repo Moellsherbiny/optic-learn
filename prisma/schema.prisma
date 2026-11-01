@@ -106,6 +106,7 @@ model Authenticator {
 model Course {
   id            String               @id @default(cuid())
   title         String
+  titleEnglish   String?
   description   String?
   teacherId     String
   teacher       User                 @relation("CoursesTeaching", fields: [teacherId], references: [id], onDelete: Cascade)
@@ -120,6 +121,7 @@ model Course {
 model Module {
   id          String       @id @default(cuid())
   title       String
+  titleEnglish   String?
   description String?
   courseId    String
   course      Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)

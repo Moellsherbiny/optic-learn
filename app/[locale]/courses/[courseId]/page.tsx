@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import CourseDetailClient from "@/components/course/course-page-client";
 import { getLocale } from "next-intl/server";
+import { Navbar } from "@/components/landing/navbar";
 
 export default async function CourseDetailPage({
   params,
@@ -69,10 +70,12 @@ export default async function CourseDetailPage({
   };
 
   return (
+    <>
+    <Navbar/>
     <CourseDetailClient
       course={serialized}
       userId={session?.user?.id ?? null}
-      locale={locale}
-    />
+      />
+      </>
   );
 }

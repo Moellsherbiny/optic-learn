@@ -1,9 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { Trash } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 import { deleteChat } from "@/actions/chat/deleteChat";
 
@@ -23,74 +24,76 @@ interface Props {
   chatId: string;
 }
 
-export default function DeleteChatDialog({
-  chatId,
-}: Props) {
+export default function DeleteChatDialog({ chatId }: Props) {
   const router = useRouter();
+  const t = useTranslations("Chat");
 
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const handleDeleteChat = () => {
+    if (isPending) return;
+
     startTransition(async () => {
       try {
         await deleteChat(chatId);
 
-        toast.success("تم حذف المحادثة بنجاح.");
-
+        toast.success(t("delete.success"));
         setOpen(false);
-
         router.refresh();
       } catch (error) {
-        console.error(error);
-
-        toast.error("حدث خطأ أثناء حذف المحادثة.");
+        console.error("Delete chat error:", error);
+        toast.error(t("errors.deleteChat"));
       }
     });
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!isPending) setOpen(nextOpen);
+      }}
+    >
       <DialogTrigger asChild>
         <Button
+          type="button"
           variant="ghost"
           size="icon"
-          className="shrink-0 cursor-pointer text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+          aria-label={t("delete.buttonLabel")}
+          className="size-9 shrink-0 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
         >
-          <Trash className="h-4 w-4" />
-
-          <span className="sr-only">
-            حذف المحادثة
-          </span>
+          <Trash2 className="size-4" />
         </Button>
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>
-            حذف المحادثة
-          </DialogTitle>
+        <DialogHeader className="text-start">
+          <div className="mb-2 flex size-11 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
+            <Trash2 className="size-5" />
+          </div>
 
-          <DialogDescription>
-            هل أنت متأكد من رغبتك في حذف هذه المحادثة؟
-            <br />
-            سيتم حذف المحادثة ولا يمكن التراجع عن هذا الإجراء.
+          <DialogTitle>{t("delete.title")}</DialogTitle>
+          <DialogDescription className="leading-6">
+            {t("delete.description")}
           </DialogDescription>
         </DialogHeader>
 
-        <DialogFooter className="gap-2 sm:justify-start">
+        <DialogFooter className="gap-2 sm:flex-row-reverse">
           <Button
             variant="destructive"
             onClick={handleDeleteChat}
             disabled={isPending}
-            className="cursor-pointer"
           >
             {isPending ? (
-              "جاري الحذف..."
+              <>
+                <Loader2 className="me-2 size-4 animate-spin" />
+                {t("delete.deleting")}
+              </>
             ) : (
               <>
-                <Trash className="h-4 w-4" />
-                حذف المحادثة
+                <Trash2 className="me-2 size-4" />
+                {t("delete.confirm")}
               </>
             )}
           </Button>
@@ -99,9 +102,8 @@ export default function DeleteChatDialog({
             variant="outline"
             onClick={() => setOpen(false)}
             disabled={isPending}
-            className="cursor-pointer"
           >
-            إلغاء
+            {t("delete.cancel")}
           </Button>
         </DialogFooter>
       </DialogContent>

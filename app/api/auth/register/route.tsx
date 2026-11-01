@@ -1,3 +1,4 @@
+
 import { NextResponse } from "next/server";
 import { registerSchema } from "@/lib/validators/auth/register.schema";
 import { prisma } from "@/lib/prisma";
@@ -8,7 +9,6 @@ import { UserRole } from "@/lib/generated/prisma/client";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-
     const parsed = registerSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -19,7 +19,6 @@ export async function POST(req: Request) {
     }
 
     const { name, email, password, role } = parsed.data;
-
     const normalizedEmail = email.trim().toLowerCase();
 
     const existingUser = await prisma.user.findUnique({
@@ -35,10 +34,31 @@ export async function POST(req: Request) {
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    const useRole = role === "teacher" ? UserRole.TEACHER : UserRole.STUDENT;
+    const useRole =
+      role === "teacher" ? UserRole.TEACHER : UserRole.STUDENT;
 
-    // Create the user and enroll students in all existing courses atomically.
     const user = await prisma.$transaction(async (tx) => {
+      // Make sure the default course exists before creating the account.
+      let courseId: string | undefined;
+
+      if (useRole === UserRole.STUDENT) {
+        courseId = process.env.DEFAULT_COURSE_ID;
+
+        if (!courseId) {
+          throw new Error("DEFAULT_COURSE_ID is not configured");
+        }
+
+        const course = await tx.course.findUnique({
+          where: { id: courseId },
+          select: { id: true },
+        });
+
+        if (!course) {
+          throw new Error("Default course not found");
+        }
+      }
+
+      // Create the user.
       const newUser = await tx.user.create({
         data: {
           name: name ?? null,
@@ -50,26 +70,27 @@ export async function POST(req: Request) {
         },
       });
 
-      if (useRole === UserRole.STUDENT) {
-        const courses = await tx.course.findMany({
-          select: { id: true },
-        });
-
-        if (courses.length > 0) {
-          await tx.enrollment.createMany({
-            data: courses.map((course) => ({
-              courseId: course.id,
+      // Automatically enroll students in the default course.
+      if (useRole === UserRole.STUDENT && courseId) {
+        await tx.enrollment.upsert({
+          where: {
+            courseId_studentId: {
+              courseId,
               studentId: newUser.id,
-            })),
-            skipDuplicates: true,
-          });
-        }
+            },
+          },
+          create: {
+            courseId,
+            studentId: newUser.id,
+          },
+          update: {},
+        });
       }
 
       return newUser;
     });
 
-    // Send OTP after the database transaction succeeds.
+    // Send OTP after the transaction succeeds.
     await sendInitialOTP({
       email: normalizedEmail,
       mode: "register",

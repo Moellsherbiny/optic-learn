@@ -1,6 +1,11 @@
 import { redirect } from "next/navigation";
-import { MessageCircleMore } from "lucide-react";
 import Link from "next/link";
+import {
+  MessageCircle,
+  MessageCircleMore,
+  Plus,
+  Users,
+} from "lucide-react";
 
 import { auth } from "@/auth";
 import { getChats } from "@/actions/chat/getChats";
@@ -10,154 +15,188 @@ import CreateChatDialog from "@/components/chat/create-chat-dialog";
 import DeleteChatDialog from "@/components/chat/delete-chat-dialog";
 
 import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from "@/components/ui/empty";
-
-import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+
+import { getLocale, getTranslations } from "next-intl/server";
 
 export default async function ChatPage() {
-  const result = await getChats();
   const session = await auth();
-  const usersResult = await getChatUsers();
 
-  if (!session?.user) {
+  if (!session?.user?.id) {
     redirect("/login");
   }
 
+  const [result, usersResult, locale, t] = await Promise.all([
+    getChats(),
+    getChatUsers(),
+    getLocale(),
+    getTranslations("Chat"),
+  ]);
+
   if (!usersResult.success) {
-    return <div>{usersResult.message}</div>;
+    return (
+      <div className="container mx-auto max-w-5xl px-4 py-10">
+        <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-6 text-sm text-destructive">
+          {t("errors.loadUsers")}
+        </div>
+      </div>
+    );
   }
 
   if (!result.success) {
     return (
-      <div>
-        {result.message ?? "حدث خطأ أثناء تحميل المحادثات."}
+      <div className="container mx-auto max-w-5xl px-4 py-10">
+        <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-6 text-sm text-destructive">
+          {t("errors.loadChats")}
+        </div>
       </div>
     );
   }
 
   const chats = result.data ?? [];
 
-  return (
-    <div className="container mx-auto p-6">
-      {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">
-            المحادثات
-          </h1>
+  const formatDate = (date: Date | string) =>
+    new Intl.DateTimeFormat(locale, {
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(date));
 
-          <p className="text-sm text-muted-foreground">
-            جميع محادثاتك
+  return (
+    <div className="container mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:py-10">
+      {/* Page header */}
+      <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-start gap-4">
+          <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <MessageCircle className="size-6" />
+          </div>
+
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+              {t("title")}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {t("description")}
+            </p>
+          </div>
+        </div>
+
+        <CreateChatDialog users={usersResult.data ?? []} />
+      </div>
+
+      {/* Conversation count */}
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <h2 className="font-semibold">{t("conversations")}</h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {t("conversationCount", { count: chats.length })}
           </p>
         </div>
 
-        <CreateChatDialog
-          users={usersResult.data ?? []}
-        />
+        <div className="flex size-9 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+          <Users className="size-4" />
+        </div>
       </div>
 
-      {/* Empty State */}
-      {chats.length === 0 ? (
-        <Empty>
-          <EmptyHeader>
-            <EmptyTitle>
-              لا توجد محادثات حتى الآن
-            </EmptyTitle>
+      {/* Conversation list */}
+      {chats.length > 0 ? (
+        <div className="overflow-hidden rounded-2xl border bg-card">
+          <div className="divide-y divide-border">
+            {chats.map((chat) => {
+              // getChats returns the latest message first (descending order).
+              const lastMessage = chat.messages[0];
+              const participantName =
+                chat.participant.name ?? t("unknownUser");
 
-            <EmptyDescription>
-              ابدأ محادثة جديدة مع أحد{" "}
-              {session.user.role === "TEACHER"
-                ? "الطلاب"
-                : "المعلمين"}.
-            </EmptyDescription>
-          </EmptyHeader>
+              return (
+                <div
+                  key={chat.id}
+                  className="group flex items-center gap-3 p-4 transition-colors hover:bg-muted/50 sm:gap-4 sm:px-5"
+                >
+                  <Link
+                    href={`/${locale}/chat/${chat.id}`}
+                    className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4"
+                  >
+                    <Avatar className="size-12 shrink-0 ring-2 ring-background">
+                      <AvatarImage
+                        src={chat.participant.image ?? undefined}
+                        alt={participantName}
+                      />
+                      <AvatarFallback className="bg-primary/10 font-semibold text-primary">
+                        {participantName.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
 
-          <EmptyContent>
-            <CreateChatDialog
-              users={usersResult.data ?? []}
-            />
-          </EmptyContent>
-        </Empty>
-      ) : (
-        /* Chats */
-        <div className="space-y-2">
-          {chats.map((chat) => {
-            const lastMessage =
-              chat.messages[chat.messages.length - 1];
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-1 flex items-center justify-between gap-3">
+                        <h3 className="truncate text-sm font-semibold transition-colors group-hover:text-primary sm:text-base">
+                          {participantName}
+                        </h3>
 
-            return (
-              <div
-                key={chat.id}
-                className="flex items-center gap-4 rounded-xl border bg-card p-4 transition-colors hover:bg-muted"
-              >
-                {/* Avatar */}
-                <Avatar className="h-12 w-12 shrink-0">
-                  <AvatarImage
-                    src={
-                      chat.participant.image ?? undefined
-                    }
-                    alt={
-                      chat.participant.name ?? "User"
-                    }
-                  />
+                        {chat.lastMessageAt && (
+                          <time
+                            dateTime={new Date(
+                              chat.lastMessageAt,
+                            ).toISOString()}
+                            className="shrink-0 text-[11px] text-muted-foreground sm:text-xs"
+                          >
+                            {formatDate(chat.lastMessageAt)}
+                          </time>
+                        )}
+                      </div>
 
-                  <AvatarFallback>
-                    {chat.participant.name
-                      ?.charAt(0)
-                      .toUpperCase() ?? "U"}
-                  </AvatarFallback>
-                </Avatar>
+                      <p className="truncate text-sm text-muted-foreground">
+                        {lastMessage?.content ?? t("noMessages")}
+                      </p>
+                    </div>
+                  </Link>
 
-                {/* Content */}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-3">
-                    {/* Chat Name Link */}
+                  <div className="flex shrink-0 items-center gap-1">
                     <Link
-                      href={`/chat/${chat.id}`}
-                      className="truncate font-semibold hover:underline"
+                      href={`/${locale}/chat/${chat.id}`}
+                      aria-label={t("openConversationWith", {
+                        name: participantName,
+                      })}
+                      className="hidden size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary sm:flex"
                     >
-                      {chat.participant.name ?? "مستخدم"}
+                      <MessageCircleMore className="size-4" />
                     </Link>
 
-                    {/* Date */}
-                    {chat.lastMessageAt && (
-                      <span className="shrink-0 text-xs text-muted-foreground">
-                        {new Date(
-                          chat.lastMessageAt
-                        ).toLocaleDateString("ar-EG", {
-                          day: "numeric",
-                          month: "short",
-                        })}
-                      </span>
-                    )}
+                    {/* The current user owns every chat returned by getChats. */}
+                    <DeleteChatDialog chatId={chat.id} />
                   </div>
-
-                  {/* Last Message */}
-                  <p className="mt-1 truncate text-sm text-muted-foreground">
-                    {lastMessage?.content ??
-                      "لا توجد رسائل بعد"}
-                  </p>
                 </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        <div className="flex min-h-[340px] flex-col items-center justify-center rounded-2xl border border-dashed bg-card/50 px-6 py-12 text-center">
+          <div className="mb-5 flex size-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <MessageCircle className="size-8" />
+          </div>
 
-                {/* Chat Icon */}
-                <MessageCircleMore className="h-5 w-5 shrink-0 text-muted-foreground" />
+          <h3 className="text-lg font-semibold">
+            {t("empty.title")}
+          </h3>
 
-                {/* Delete */}
-                {session.user.id === chat.participant.id && (
-                  <DeleteChatDialog chatId={chat.id} />
-                )}
-              </div>
-            );
-          })}
+          <p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
+            {session.user.role === "TEACHER"
+              ? t("empty.teacherDescription")
+              : t("empty.studentDescription")}
+          </p>
+
+          <div className="mt-6">
+            <CreateChatDialog
+              users={usersResult.data ?? []}
+              triggerLabel={t("newConversation")}
+            />
+          </div>
         </div>
       )}
     </div>

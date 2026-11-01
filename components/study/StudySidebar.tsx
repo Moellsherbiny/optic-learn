@@ -1,6 +1,5 @@
-"use client";
 
-// components/study/StudySidebar.tsx
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -16,7 +15,10 @@ import {
   Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { ModuleWithProgress, LessonWithProgress } from "@/types/study";
+import type {
+  ModuleWithProgress,
+  LessonWithProgress,
+} from "@/types/study";
 import { LessonType, StudentLevel } from "@/types/study";
 
 interface Props {
@@ -25,6 +27,7 @@ interface Props {
   progressPercent: number;
   completedLessons: number;
   totalLessons: number;
+  onLessonSelect?: () => void;
 }
 
 const lessonIcon = {
@@ -35,9 +38,12 @@ const lessonIcon = {
 };
 
 const levelColor: Record<StudentLevel, string> = {
-  [StudentLevel.BEGINNER]: "text-emerald-400 bg-emerald-400/10",
-  [StudentLevel.INTERMEDIATE]: "text-amber-400 bg-amber-400/10",
-  [StudentLevel.ADVANCED]: "text-rose-400 bg-rose-400/10",
+  [StudentLevel.BEGINNER]:
+    "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  [StudentLevel.INTERMEDIATE]:
+    "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+  [StudentLevel.ADVANCED]:
+    "bg-rose-500/10 text-rose-600 dark:text-rose-400",
 };
 
 export function StudySidebar({
@@ -46,95 +52,156 @@ export function StudySidebar({
   progressPercent,
   completedLessons,
   totalLessons,
+  onLessonSelect,
 }: Props) {
   const params = useParams();
   const activeLessonId = params?.lessonId as string | undefined;
 
-  // Default: open the module that contains the active lesson
-  const defaultOpen = modules.find((m) =>
-    m.lessons.some((l) => l.id === activeLessonId),
+  // Open the module containing the active lesson by default.
+  const defaultOpen = modules.find((module) =>
+    module.lessons.some((lesson) => lesson.id === activeLessonId),
   )?.id;
 
   const [openModules, setOpenModules] = useState<Set<string>>(
     new Set(defaultOpen ? [defaultOpen] : modules[0] ? [modules[0].id] : []),
   );
 
+  const progress = Math.min(100, Math.max(0, progressPercent));
+
   function toggleModule(id: string) {
-    setOpenModules((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+    setOpenModules((previous) => {
+      const next = new Set(previous);
+
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+
       return next;
     });
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full min-h-0 flex-col bg-sidebar text-sidebar-foreground">
       {/* Progress summary */}
-      <div className="p-4 border-b border-white/5">
-        <div className="flex justify-between text-xs mb-2">
-          <span className="text-white/40">Your progress</span>
-          <span className="text-violet-400 font-semibold tabular-nums">
+      <div className="shrink-0 border-b border-sidebar-border p-4">
+        <div className="mb-2 flex items-center justify-between gap-2 text-xs">
+          <span className="text-muted-foreground">Your progress</span>
+
+          <span className="font-semibold tabular-nums text-primary">
             {completedLessons} / {totalLessons} lessons
           </span>
         </div>
-        <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+
+        <div
+          className="h-1.5 overflow-hidden rounded-full bg-muted"
+          role="progressbar"
+          aria-valuenow={progress}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label="Course progress"
+        >
           <div
-            className="h-full rounded-full bg-linear-to-r from-violet-500 to-fuchsia-500 transition-all duration-700"
-            style={{ width: `${progressPercent}%` }}
+            className="h-full rounded-full bg-primary transition-[width] duration-500"
+            style={{ width: `${progress}%` }}
           />
         </div>
-        <p className="text-xs text-white/30 mt-2">
-          {progressPercent}% complete
-        </p>
+
+        <div className="mt-2 flex items-center justify-between text-xs">
+          <span className="text-muted-foreground">
+            {progress}% complete
+          </span>
+
+          {progress === 100 && (
+            <span className="font-medium text-primary">
+              Completed
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Modules list */}
-      <nav className="flex-1 overflow-y-auto py-2">
-        {modules.map((mod, modIdx) => {
-          const isOpen = openModules.has(mod.id);
-          const previousModule = modIdx > 0 ? modules[modIdx - 1] : null;
+      <nav
+        aria-label="Course modules and lessons"
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-2"
+      >
+        {modules.map((module, moduleIndex) => {
+          const isOpen = openModules.has(module.id);
+          const previousModule =
+            moduleIndex > 0 ? modules[moduleIndex - 1] : null;
 
           const isLocked =
             previousModule !== null &&
             previousModule.completedCount < previousModule.totalCount;
+
+          const isModuleCompleted =
+            module.totalCount > 0 &&
+            module.completedCount >= module.totalCount;
+
           return (
-            <div key={mod.id} className="border-b border-white/5 last:border-0">
+            <div
+              key={module.id}
+              className="border-b border-sidebar-border last:border-0"
+            >
               {/* Module header */}
               <button
-                onClick={() => {
-                  if (!isLocked) {
-                    toggleModule(mod.id);
-                  }
-                }}
-                className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/3 transition-colors group"
+                type="button"
+                onClick={() => toggleModule(module.id)}
+                disabled={isLocked}
+                aria-expanded={!isLocked && isOpen}
+                className={cn(
+                  "group flex w-full items-center gap-3 px-4 py-3 text-start transition-colors",
+                  isLocked
+                    ? "cursor-not-allowed opacity-50"
+                    : "hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                )}
               >
-                <span className="shrink-0 w-6 h-6 rounded-full bg-white/5 flex items-center justify-center text-xs text-white/30 font-mono">
-                  {modIdx + 1}
+                <span
+                  className={cn(
+                    "flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold",
+                    isModuleCompleted
+                      ? "bg-primary/10 text-primary"
+                      : "bg-muted text-muted-foreground",
+                  )}
+                >
+                  {isModuleCompleted ? (
+                    <CheckCircle2 className="size-4" />
+                  ) : (
+                    moduleIndex + 1
+                  )}
                 </span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white/80 truncate group-hover:text-white transition-colors">
-                    {mod.title}
+
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-foreground transition-colors">
+                    {module.title}
                   </p>
-                  <div className="flex items-center gap-2 mt-0.5">
+
+                  <div className="mt-1 flex flex-wrap items-center gap-2">
                     <span
                       className={cn(
-                        "text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded",
-                        levelColor[mod.level],
+                        "rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
+                        levelColor[module.level],
                       )}
                     >
-                      {mod.level.toLowerCase()}
+                      {module.level.toLowerCase()}
                     </span>
-                    <span className="text-[11px] text-white/30">
-                      {mod.completedCount}/{mod.totalCount}
+
+                    <span className="text-[11px] tabular-nums text-muted-foreground">
+                      {module.completedCount}/{module.totalCount}
                     </span>
                   </div>
                 </div>
+
                 {isLocked ? (
-                  <Lock className="w-4 h-4 text-white/30" />
+                  <Lock
+                    className="size-4 shrink-0 text-muted-foreground"
+                    aria-label="Locked module"
+                  />
                 ) : (
                   <ChevronDown
                     className={cn(
-                      "w-4 h-4 text-white/30 transition-transform",
+                      "size-4 shrink-0 text-muted-foreground transition-transform duration-200",
                       isOpen && "rotate-180",
                     )}
                   />
@@ -143,13 +210,14 @@ export function StudySidebar({
 
               {/* Lessons list */}
               {isOpen && !isLocked && (
-                <ul className="pb-2">
-                  {mod.lessons.map((lesson) => (
+                <ul className="space-y-0.5 px-2 pb-2">
+                  {module.lessons.map((lesson) => (
                     <LessonItem
                       key={lesson.id}
                       lesson={lesson}
                       courseId={courseId}
                       isActive={lesson.id === activeLessonId}
+                      onSelect={onLessonSelect}
                     />
                   ))}
                 </ul>
@@ -157,6 +225,12 @@ export function StudySidebar({
             </div>
           );
         })}
+
+        {modules.length === 0 && (
+          <p className="px-4 py-8 text-center text-sm text-muted-foreground">
+            No modules available.
+          </p>
+        )}
       </nav>
     </div>
   );
@@ -166,10 +240,12 @@ function LessonItem({
   lesson,
   courseId,
   isActive,
+  onSelect,
 }: {
   lesson: LessonWithProgress;
   courseId: string;
   isActive: boolean;
+  onSelect?: () => void;
 }) {
   const Icon = lessonIcon[lesson.type] ?? FileText;
 
@@ -177,34 +253,38 @@ function LessonItem({
     <li>
       <Link
         href={`/courses/${courseId}/study/${lesson.id}`}
+        onClick={onSelect}
+        aria-current={isActive ? "page" : undefined}
         className={cn(
-          "flex items-center gap-3 px-4 py-2.5 pl-12 text-sm transition-all",
+          "flex min-w-0 items-center gap-2.5 rounded-md border-s-2 px-3 py-2.5 ps-10 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           isActive
-            ? "bg-violet-500/15 text-white border-r-2 border-violet-500"
-            : "text-white/50 hover:text-white/80 hover:bg-white/3",
+            ? "border-s-primary bg-primary/10 text-foreground"
+            : "border-transparent text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
         )}
       >
         {/* Completion indicator */}
         {lesson.isCompleted ? (
-          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <CheckCircle2 className="size-4 shrink-0 text-emerald-500" />
         ) : (
-          <Circle className="w-4 h-4 text-white/20 shrink-0" />
+          <Circle className="size-4 shrink-0 text-muted-foreground/50" />
         )}
 
         {/* Lesson type icon */}
         <Icon
           className={cn(
-            "w-3.5 h-3.5 shrink-0",
-            isActive ? "text-violet-400" : "text-white/25",
+            "size-3.5 shrink-0",
+            isActive ? "text-primary" : "text-muted-foreground",
           )}
         />
 
-        {/* Title */}
-        <span className="flex-1 truncate">{lesson.title}</span>
+        {/* Lesson title */}
+        <span className="min-w-0 flex-1 truncate">
+          {lesson.title}
+        </span>
 
         {/* AR badge */}
         {lesson.type === LessonType.AR_MODEL && (
-          <span className="text-[10px] font-bold uppercase tracking-wide text-fuchsia-400 bg-fuchsia-400/10 px-1.5 py-0.5 rounded shrink-0">
+          <span className="shrink-0 rounded bg-fuchsia-500/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-fuchsia-600 dark:text-fuchsia-400">
             AR
           </span>
         )}

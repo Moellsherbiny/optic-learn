@@ -45,7 +45,10 @@ export default async function HomePage() {
   const DownArrow = isArabic ? ArrowDownLeft : ArrowDownRight;
 
   return (
-    <main dir={isArabic ? "rtl" : "ltr"} className="min-h-screen overflow-x-clip bg-background text-foreground">
+    <main
+      dir={isArabic ? "rtl" : "ltr"}
+      className="min-h-screen overflow-x-clip bg-background text-foreground"
+    >
       <Navbar />
 
       <section
@@ -54,7 +57,10 @@ export default async function HomePage() {
       >
         <div className="min-w-0">
           <div className="mb-6 inline-flex max-w-full items-center gap-2 rounded-full border border-border px-3 py-2 text-xs font-medium text-muted-foreground">
-            <Sparkles className="size-3.5 shrink-0 text-primary" aria-hidden="true" />
+            <Sparkles
+              className="size-3.5 shrink-0 text-primary"
+              aria-hidden="true"
+            />
             <span>{t("hero.eyebrow")}</span>
           </div>
 
@@ -63,7 +69,10 @@ export default async function HomePage() {
             <br />
             <span className="relative inline-block">
               {t("hero.titleLine2")}
-              <span aria-hidden="true" className="absolute inset-x-0 -bottom-1 h-0.75 rounded-full bg-primary" />
+              <span
+                aria-hidden="true"
+                className="absolute inset-x-0 -bottom-1 h-0.75 rounded-full bg-primary"
+              />
             </span>
             <br />
             {t("hero.titleLine3")}
@@ -91,7 +100,10 @@ export default async function HomePage() {
           </div>
 
           <div className="mt-9 flex items-center gap-3 border-t border-border pt-5 sm:mt-12 sm:pt-6">
-            <div className="flex shrink-0 -space-x-2 rtl:space-x-reverse" aria-hidden="true">
+            <div
+              className="flex shrink-0 -space-x-2 rtl:space-x-reverse"
+              aria-hidden="true"
+            >
               <span className="flex size-9 items-center justify-center rounded-full border-2 border-background bg-muted">
                 <BookOpen className="size-4" />
               </span>
@@ -112,15 +124,15 @@ export default async function HomePage() {
           <div className="relative isolate aspect-square overflow-hidden rounded-[1.5rem] border border-border bg-card sm:rounded-[2rem]">
             <div className="absolute inset-3 rounded-[1.1rem] border border-border sm:inset-5 sm:rounded-[1.5rem]" />
             <div className="absolute inset-0 grid place-items-center">
-              <div className="relative aspect-square w-[76%] max-w-97.5 rounded-full border border-foreground/20">
+              <div className="relative aspect-square w-[76%] max-w-97.5 rounded-full border border-foreground/20 animate-[spin_30s_linear_infinite]">
                 <span className="absolute inset-[12%] rounded-full border border-foreground/20" />
                 <span className="absolute inset-[24%] rounded-full border border-foreground/25" />
                 <span className="absolute inset-[36%] rounded-full border border-primary/60" />
                 <span className="absolute inset-[43%] rounded-full bg-primary" />
                 <span className="absolute left-1/2 top-0 h-full w-px -translate-x-1/2 bg-border" />
                 <span className="absolute left-0 top-1/2 h-px w-full -translate-y-1/2 bg-border" />
-                <span className="absolute left-1/2 top-1/2 h-[140%] w-px -translate-x-1/2 -translate-y-1/2 rotate-45 bg-border/80" />
-                <span className="absolute left-1/2 top-1/2 h-[140%] w-px -translate-x-1/2 -translate-y-1/2 -rotate-45 bg-border/80" />
+                <span className="absolute left-1/2 top-1/2 h-[128%] w-px -translate-x-1/2 -translate-y-1/2 rotate-45 bg-border/80" />
+                <span className="absolute left-1/2 top-1/2 h-[128%] w-px -translate-x-1/2 -translate-y-1/2 -rotate-45 bg-border/80" />
               </div>
             </div>
 
@@ -141,7 +153,9 @@ export default async function HomePage() {
             <div className="absolute inset-x-4 bottom-4 rounded-xl border border-border bg-background p-4 shadow-sm sm:inset-x-8 sm:bottom-8 sm:rounded-2xl sm:p-6">
               <div className="flex items-start justify-between gap-3 sm:gap-4">
                 <div className="min-w-0">
-                  <p className="text-xs text-muted-foreground">{t("visual.cardEyebrow")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("visual.cardEyebrow")}
+                  </p>
                   <h2 className="mt-2 text-lg font-semibold leading-snug tracking-tight sm:text-2xl">
                     {t("visual.cardTitle")}
                   </h2>
@@ -152,17 +166,26 @@ export default async function HomePage() {
               </div>
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3 sm:mt-6 sm:pt-4">
                 <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
-                  <Check className="size-4 shrink-0 text-primary" aria-hidden="true" />
+                  <Check
+                    className="size-4 shrink-0 text-primary"
+                    aria-hidden="true"
+                  />
                   {t("visual.cardFooter")}
                 </span>
-                <span className="font-mono text-xs text-muted-foreground">01 / 03</span>
+                <span className="font-mono text-xs text-muted-foreground">
+                  01 / 03
+                </span>
               </div>
             </div>
           </div>
 
           <div className="mt-3 flex items-center justify-between gap-3 px-1">
-            <span className="text-xs leading-5 text-muted-foreground">{t("visual.caption")}</span>
-            <span className="shrink-0 font-mono text-[10px] text-muted-foreground sm:text-xs">OPTIC / 01</span>
+            <span className="text-xs leading-5 text-muted-foreground">
+              {t("visual.caption")}
+            </span>
+            <span className="shrink-0 font-mono text-[10px] text-muted-foreground sm:text-xs">
+              OPTIC / 01
+            </span>
           </div>
         </div>
       </section>
@@ -171,7 +194,10 @@ export default async function HomePage() {
         <div className="h-px bg-border" />
       </div>
 
-      <section id="features" className="mx-auto w-full max-w-7xl px-5 py-14 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
+      <section
+        id="features"
+        className="mx-auto w-full max-w-7xl px-5 py-14 sm:px-8 sm:py-20 lg:px-12 lg:py-24"
+      >
         <div className="mb-8 grid gap-4 sm:mb-10 md:grid-cols-[1fr_0.8fr] md:items-end md:gap-8">
           <div className="min-w-0">
             <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
@@ -198,7 +224,9 @@ export default async function HomePage() {
                   <span className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-border bg-background transition-colors group-hover:bg-muted">
                     <Icon className="size-5" aria-hidden="true" />
                   </span>
-                  <span className="font-mono text-xs text-muted-foreground">/ {feature.number}</span>
+                  <span className="font-mono text-xs text-muted-foreground">
+                    / {feature.number}
+                  </span>
                 </div>
                 <h3 className="mt-6 text-lg font-semibold tracking-tight sm:mt-8 sm:text-xl">
                   {feature.title}
@@ -207,8 +235,13 @@ export default async function HomePage() {
                   {feature.description}
                 </p>
                 <div className="mt-6 flex items-center justify-between gap-3 border-t border-border pt-4">
-                  <span className="text-xs text-muted-foreground">{t("features.learnMore")}</span>
-                  <UpArrow className="size-4 shrink-0 transition-transform group-hover:-translate-y-0.5" aria-hidden="true" />
+                  <span className="text-xs text-muted-foreground">
+                    {t("features.learnMore")}
+                  </span>
+                  <UpArrow
+                    className="size-4 shrink-0 transition-transform group-hover:-translate-y-0.5"
+                    aria-hidden="true"
+                  />
                 </div>
               </article>
             );

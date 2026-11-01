@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -34,7 +34,7 @@ import {
   Calendar,
   ArrowRight,
 } from "lucide-react";
-import Navbar from "../layout/navbar";
+
 
 type Lesson = {
   id: string;
@@ -133,7 +133,7 @@ function ModuleItem({
               total,
             })}
 
-            {isEnrolled && completedCount > 0 && ` • ${t("done")}`}
+            {isEnrolled && completedCount > 0 && ` • ${t("courses.done")}`}
           </span>
         </div>
 
@@ -198,22 +198,25 @@ function ModuleItem({
 export default function CourseDetailClient({
   course,
   userId,
-  locale,
 }: {
   course: Course;
   userId: string | null;
-  locale: string;
 }) {
+  const locale = useLocale();
   const t = useTranslations("courses");
   const router = useRouter();
+
   const isRtl = locale === "ar";
+
   const [isPending, startTransition] = useTransition();
 
   const pct = progressPercent(course.modules);
+
   const totalLessons = course.modules.reduce(
-    (sum, m) => sum + m.lessons.length,
+    (sum, module) => sum + module.lessons.length,
     0,
   );
+
   const BackIcon = isRtl ? ChevronRight : ChevronLeft;
 
   const handleEnroll = () => {
@@ -221,6 +224,7 @@ export default function CourseDetailClient({
       router.push(`/${locale}/auth/signin`);
       return;
     }
+
     startTransition(async () => {
       await enrollInCourse(course.id);
       router.refresh();
@@ -229,126 +233,141 @@ export default function CourseDetailClient({
 
   return (
     <div
-      className="min-h-screen bg-white dark:bg-zinc-950"
+      className="min-h-screen bg-background text-foreground"
       dir={isRtl ? "rtl" : "ltr"}
     >
-      <Navbar />
-
-      {/* ── Header Area ──────────────────────────────────────────── */}
-      <div className="bg-zinc-50/50 dark:bg-zinc-900/30 border-b border-zinc-100 dark:border-zinc-800">
-        <div className="mx-auto max-w-7xl px-6 py-4">
+      {/* Header */}
+      <header className="border-b border-border bg-muted/30">
+        <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6">
           <Link
             href={`/${locale}/courses`}
-            className="group inline-flex items-center gap-2 text-sm font-bold text-zinc-400 hover:text-primary transition-colors"
+            className="group inline-flex items-center gap-2 text-sm font-bold text-muted-foreground transition-colors hover:text-primary"
           >
             <BackIcon
               size={16}
-              className="transition-transform group-hover:-translate-x-1"
+              className="transition-transform group-hover:-translate-x-1 rtl:group-hover:translate-x-1"
             />
             {t("backToCourses")}
           </Link>
         </div>
 
-        <div className="mx-auto max-w-7xl px-6 pb-12 pt-4">
-          <div className="flex flex-col lg:flex-row gap-12">
-            {/* Left: Course Info */}
-            <div className="flex-1 space-y-8">
+        <div className="mx-auto max-w-7xl px-4 pb-12 pt-4 sm:px-6">
+          <div className="flex flex-col gap-12 lg:flex-row">
+            {/* Course Information */}
+            <div className="min-w-0 flex-1 space-y-8">
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-primary">
                   <Monitor size={14} />
                   {t("dept")}
                 </div>
-                <h1 className="text-4xl md:text-5xl font-black leading-tight tracking-tighter text-zinc-900 dark:text-white">
+
+                <h1 className="text-4xl font-black leading-tight tracking-tight text-foreground md:text-5xl">
                   {course.title}
                 </h1>
+
                 {course.description && (
-                  <p className="text-zinc-500 dark:text-zinc-400 text-lg leading-relaxed max-w-2xl">
+                  <p className="max-w-2xl text-lg leading-relaxed text-muted-foreground">
                     {course.description}
                   </p>
                 )}
               </div>
 
-              {/* Enhanced Stats Row */}
-              <div className="flex flex-wrap gap-y-4 gap-x-8">
-                <div className="flex items-center gap-2 text-zinc-500">
-                  <div className="p-2 rounded-lg bg-white dark:bg-zinc-800 shadow-sm border border-zinc-100 dark:border-zinc-700">
-                    <Users size={16} className="text-blue-500" />
+              {/* Course Statistics */}
+              <div className="flex flex-wrap gap-x-8 gap-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="rounded-lg border border-border bg-card p-2 shadow-sm">
+                    <Users size={16} className="text-primary" />
                   </div>
+
                   <div className="flex flex-col">
-                    <span className="text-sm font-black text-zinc-900 dark:text-white">
+                    <span className="text-sm font-black text-foreground">
                       {course.enrollmentCount}
                     </span>
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">
+
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                       {t("students")}
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-zinc-500">
-                  <div className="p-2 rounded-lg bg-white dark:bg-zinc-800 shadow-sm border border-zinc-100 dark:border-zinc-700">
-                    <Layers size={16} className="text-purple-500" />
+
+                <div className="flex items-center gap-2">
+                  <div className="rounded-lg border border-border bg-card p-2 shadow-sm">
+                    <Layers size={16} className="text-primary" />
                   </div>
+
                   <div className="flex flex-col">
-                    <span className="text-sm font-black text-zinc-900 dark:text-white">
+                    <span className="text-sm font-black text-foreground">
                       {course.modules.length}
                     </span>
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">
+
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                       {t("modules")}
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-zinc-500">
-                  <div className="p-2 rounded-lg bg-white dark:bg-zinc-800 shadow-sm border border-zinc-100 dark:border-zinc-700">
-                    <BookOpen size={16} className="text-emerald-500" />
+
+                <div className="flex items-center gap-2">
+                  <div className="rounded-lg border border-border bg-card p-2 shadow-sm">
+                    <BookOpen size={16} className="text-primary" />
                   </div>
+
                   <div className="flex flex-col">
-                    <span className="text-sm font-black text-zinc-900 dark:text-white">
+                    <span className="text-sm font-black text-foreground">
                       {totalLessons}
                     </span>
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">
-                      {t(`lessons`, {
+
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      {t("lessons", {
                         completed: 0,
                         total: totalLessons,
                       })}
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-zinc-500">
-                  <div className="p-2 rounded-lg bg-white dark:bg-zinc-800 shadow-sm border border-zinc-100 dark:border-zinc-700">
-                    <Calendar size={16} className="text-amber-500" />
+
+                <div className="flex items-center gap-2">
+                  <div className="rounded-lg border border-border bg-card p-2 shadow-sm">
+                    <Calendar size={16} className="text-primary" />
                   </div>
+
                   <div className="flex flex-col">
-                    <span className="text-sm font-black text-zinc-900 dark:text-white">
+                    <span className="text-sm font-black text-foreground">
                       {formatDate(course.createdAt, locale)}
                     </span>
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">
-                      Created
+
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                      {t("createdAtLabel")}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Instructor Card */}
-              <div className="flex items-center gap-4 p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 w-fit shadow-sm">
-                <Avatar className="h-12 w-12 border-2 border-white dark:border-zinc-800">
+              {/* Instructor */}
+              <div className="flex w-fit items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-sm">
+                <Avatar className="h-12 w-12 border-2 border-background">
                   <AvatarImage src={course.teacherImage ?? undefined} />
-                  <AvatarFallback className="bg-zinc-100 dark:bg-zinc-800 text-sm font-black">
+
+                  <AvatarFallback className="bg-muted text-sm font-black text-foreground">
                     {course.teacherName.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
+
                 <div>
-                  <p className="text-[10px] uppercase font-black tracking-widest text-primary mb-0.5">
+                  <p className="mb-0.5 text-[10px] font-black uppercase tracking-widest text-primary">
                     {t("instructor")}
                   </p>
-                  <p className="text-base font-bold text-zinc-900 dark:text-white">
+
+                  <p className="text-base font-bold text-foreground">
                     {course.teacherName}
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Right: Enrollment Card */}
-            <div className="lg:w-80 xl:w-96 shrink-0">
-              <div className="sticky top-24 rounded-[2rem] border-none bg-white dark:bg-zinc-900 overflow-hidden shadow-2xl shadow-zinc-200 dark:shadow-none">
+            {/* Enrollment Card */}
+            <div className="w-full shrink-0 lg:w-80 xl:w-96">
+              <div className="sticky top-24 overflow-hidden rounded-[2rem] border border-border bg-card shadow-xl">
+                {/* Course Thumbnail */}
                 <div className="relative aspect-video w-full">
                   {course.thumbnail ? (
                     <Image
@@ -356,54 +375,63 @@ export default function CourseDetailClient({
                       alt={course.title}
                       fill
                       className="object-cover"
-                      sizes="400px"
+                      sizes="(max-width: 1024px) 100vw, 400px"
                     />
                   ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-zinc-100 dark:bg-zinc-800 text-zinc-300">
+                    <div className="absolute inset-0 flex items-center justify-center bg-muted text-muted-foreground">
                       <Monitor size={60} />
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+
                   {!course.isEnrolled && (
-                    <Badge className="absolute bottom-4 left-4 bg-white text-black font-black uppercase tracking-tighter border-none px-3">
-                      Limited Seats
+                    <Badge className="absolute bottom-4 start-4 border-0 bg-background font-black text-foreground">
+                      {t("limitedSeats")}
                     </Badge>
                   )}
                 </div>
 
-                <div className="p-8 space-y-6">
+                <div className="space-y-6 p-6 sm:p-8">
                   {course.isEnrolled ? (
                     <div className="space-y-6">
+                      {/* Progress */}
                       <div className="space-y-3">
-                        <div className="flex justify-between items-end">
-                          <span className="text-xs font-black uppercase tracking-widest text-zinc-400">
+                        <div className="flex items-end justify-between">
+                          <span className="text-xs font-black uppercase tracking-widest text-muted-foreground">
                             {t("yourProgress")}
                           </span>
+
                           <span className="text-2xl font-black text-primary">
                             {pct}%
                           </span>
                         </div>
+
                         <Progress
                           value={pct}
-                          className="h-2.5 bg-zinc-100 dark:bg-zinc-800"
+                          className="h-2.5 bg-muted"
                         />
                       </div>
+
                       <Button
                         asChild
-                        className="w-full h-14 rounded-2xl text-base font-bold shadow-lg shadow-primary/20"
                         size="lg"
+                        className="h-14 w-full rounded-2xl text-base font-bold shadow-lg shadow-primary/20"
                       >
                         <Link href={`/${locale}/courses/${course.id}/study`}>
-                          {pct > 0 ? t("continueLearning") : t("startLearning")}
-                          <ArrowRight className="ms-2 h-5 w-5" />
+                          {pct > 0
+                            ? t("continueLearning")
+                            : t("startLearning")}
+
+                          <ArrowRight className="ms-2 h-5 w-5 rtl:rotate-180" />
                         </Link>
                       </Button>
                     </div>
                   ) : (
                     <div className="space-y-4">
                       <Button
-                        className="w-full h-14 rounded-2xl text-base font-bold shadow-lg shadow-primary/20"
                         size="lg"
+                        className="h-14 w-full rounded-2xl text-base font-bold shadow-lg shadow-primary/20"
                         onClick={handleEnroll}
                         disabled={isPending}
                       >
@@ -415,8 +443,9 @@ export default function CourseDetailClient({
                           t("signInToEnroll")
                         )}
                       </Button>
-                      <p className="text-sm text-center font-medium text-zinc-500">
-                        ✨ {t("freeEnrollment")}
+
+                      <p className="text-center text-sm font-medium text-muted-foreground">
+                        {t("freeEnrollment")}
                       </p>
                     </div>
                   )}
@@ -425,17 +454,18 @@ export default function CourseDetailClient({
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* ── Curriculum Section ────────────────────────────────────────── */}
-      <div className="mx-auto max-w-7xl px-6 py-16">
+      {/* Curriculum */}
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
         <div className="max-w-3xl space-y-8">
           <div className="space-y-1">
-            <h2 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-white">
+            <h2 className="text-3xl font-black tracking-tight text-foreground">
               {t("curriculum")}
             </h2>
-            <p className="text-zinc-500 font-medium">
-              Follow the structured path to master this subject
+
+            <p className="font-medium text-muted-foreground">
+              {t("curriculumDescription")}
             </p>
           </div>
 
@@ -450,17 +480,19 @@ export default function CourseDetailClient({
                 defaultOpen={idx === 0}
               />
             ))}
+
             {course.modules.length === 0 && (
-              <div className="py-20 flex flex-col items-center justify-center border-2 border-dashed border-zinc-100 dark:border-zinc-800 rounded-[2rem]">
-                <BookOpen className="h-12 w-12 text-zinc-200 mb-4" />
-                <p className="text-lg font-bold text-zinc-400">
+              <div className="flex flex-col items-center justify-center rounded-[2rem] border-2 border-dashed border-border py-20">
+                <BookOpen className="mb-4 h-12 w-12 text-muted-foreground/40" />
+
+                <p className="text-lg font-bold text-muted-foreground">
                   {t("noModules")}
                 </p>
               </div>
             )}
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

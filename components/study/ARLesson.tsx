@@ -50,7 +50,7 @@ interface Props {
  * - يعمل على الأجهزة الداعمة لـ WebXR.
  * - لا يحتاج Hiro Marker أو AR.js.
  */
-export function ARLesson({ lesson }: Props) {
+export default function ARLesson({ lesson }: Props) {
   const modelUrl = lesson.arModelUrl;
 
   return (

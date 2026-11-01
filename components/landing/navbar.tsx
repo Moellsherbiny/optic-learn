@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Circle, LogOut, LayoutDashboard, UserRound } from "lucide-react";
 import { signOutAction } from "@/actions/auth/sign-out";
+import LanguageSwitcher from "../layout/language-switcher";
 export async function Navbar() {
   const [locale, t, session] = await Promise.all([
     getLocale(),
@@ -52,8 +53,10 @@ export async function Navbar() {
           </span>
 
           <span className="whitespace-nowrap text-base font-semibold tracking-tight sm:text-lg">
-            optic
-            <span className="font-normal text-muted-foreground">learn</span>
+            {t("nav.brand.first")}
+            <span className="font-normal text-muted-foreground">
+              {t("nav.brand.second")}
+            </span>
           </span>
         </Link>
 
@@ -86,14 +89,7 @@ export async function Navbar() {
 
         {/* Account actions */}
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-          <Link
-            href={`/${alternateLocale}`}
-            hrefLang={alternateLocale}
-            aria-label={isArabic ? "Switch to English" : "التبديل إلى العربية"}
-            className="inline-flex min-h-9 items-center justify-center rounded-full border border-border px-3 text-xs font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            {isArabic ? "EN" : "عربي"}
-          </Link>
+          <LanguageSwitcher/>
 
           {user ? (
             <>

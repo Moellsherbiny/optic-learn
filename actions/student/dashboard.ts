@@ -42,6 +42,7 @@ export async function getStudentDashboardData(userId: string) {
       return {
         id: enrollment.course.id,
         title: enrollment.course.title,
+        titleEn: enrollment.course.titleEnglish,
         instructor: enrollment.course.teacher.name,
         thumbnail: enrollment.course.thumbnail,
         totalLessons,

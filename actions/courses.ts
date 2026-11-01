@@ -11,20 +11,43 @@ export async function getCourseById(courseId: string) {
 }
 
 export async function getAllCourses() {
-  return prisma.course.findMany({
+  const courses = await prisma.course.findMany({
     orderBy: {
       createdAt: "desc",
     },
     include: {
-        teacher: true,
+      teacher: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+        },
+      },
       _count: {
         select: {
           enrollments: true,
           modules: true,
         },
       },
+      modules: {
+        select: {
+          _count: {
+            select: {
+              lessons: true,
+            },
+          },
+        },
+      },
     },
   });
+
+  return courses.map(({ modules, ...course }) => ({
+    ...course,
+    totalLessons: modules.reduce(
+      (total, module) => total + module._count.lessons,
+      0,
+    ),
+  }));
 }
 
 export async function getCoursePageData(

@@ -1,534 +1,417 @@
+
 "use client";
 
-import { useState, useMemo, useTransition } from "react";
-import { useTranslations, useLocale } from "next-intl";
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { cn } from "@/lib/utils";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Search,
-  LayoutGrid,
-  List,
-  ChevronDown,
+  ArrowUpLeft,
+  ArrowUpRight,
   BookOpen,
+  GraduationCap,
+  Layers3,
+  Search,
+  SearchX,
   Users,
-  Layers,
-  CheckCircle2,
-  Lock,
-  ArrowRight,
-  Monitor,
-  Cpu,
-  Filter,
 } from "lucide-react";
-import Navbar from "../layout/navbar";
+import type { getAllCourses } from "@/actions/courses";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+type Courses = Awaited<ReturnType<typeof getAllCourses>>;
 
-export type CourseItem = {
-  id: string;
-  title: string;
-  description: string | null;
-  thumbnail: string | null;
-  teacherName: string;
-  teacherImage: string | null;
-  enrollmentCount: number;
-  moduleCount: number;
-  isEnrolled: boolean;
-  progress: { completed: number; total: number } | null;
-  createdAt: string;
+type CoursesClientProps = {
+  courses: Courses;
+  locale: string;
 };
 
-type SortKey = "newest" | "popular" | "title";
-type ViewMode = "grid" | "list";
+export default function CoursesClient({
+  courses,
+  locale,
+}: CoursesClientProps) {
+  const [search, setSearch] = useState("");
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+  const isArabic = locale === "ar";
+  const isRTL = isArabic;
 
-function progressPercent(p: { completed: number; total: number } | null) {
-  if (!p || p.total === 0) return 0;
-  return Math.round((p.completed / p.total) * 100);
-}
+  const text = {
+    eyebrow: isArabic ? "مساحة التعلّم" : "LEARNING SPACE",
+    title: isArabic ? "صيانة الحاسب الآلي" : "Computer Maintenance",
+    subtitle: isArabic
+      ? "كل ما تحتاجه لفهم مكونات الحاسب، وتشخيص الأعطال، واكتساب مهارات الصيانة العملية."
+      : "Explore computer components, diagnose problems, and build practical maintenance skills.",
+    catalog: isArabic ? "المحتوى التعليمي" : "COURSE LIBRARY",
+    catalogTitle: isArabic ? "رحلتك تبدأ من هنا" : "Your learning journey starts here",
+    search: isArabic ? "ابحث عن كورس..." : "Search courses...",
+    allCourses: isArabic ? "الكورسات المتاحة" : "Available courses",
+    modules: isArabic ? "وحدة تعليمية" : "modules",
+    lessons: isArabic ? "درس" : "lessons",
+    students: isArabic ? "طالب" : "students",
+    instructor: isArabic ? "المحاضر" : "Instructor",
+    start: isArabic ? "ابدأ التعلّم" : "Start learning",
+    continue: isArabic ? "متابعة التعلّم" : "Continue learning",
+    emptyTitle: isArabic ? "مفيش نتائج مطابقة" : "No matching courses",
+    emptyDescription: isArabic
+      ? "جرّب كلمة بحث مختلفة."
+      : "Try searching with a different keyword.",
+    clear: isArabic ? "مسح البحث" : "Clear search",
+    noCourses: isArabic
+      ? "الكورسات هتظهر هنا بمجرد إضافتها."
+      : "Courses will appear here once they are added.",
+    overview: isArabic ? "نظرة عامة" : "OVERVIEW",
+    subject: isArabic ? "المادة التعليمية" : "SUBJECT",
+  };
 
-function teacherInitials(name: string) {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
+  const filteredCourses = useMemo(() => {
+    const query = search.trim().toLocaleLowerCase(
+      isArabic ? "ar" : "en",
+    );
 
-// Decorative hologram-themed placeholder SVG when no thumbnail
-function CoursePlaceholder({ seed }: { seed: string }) {
-  const hue = (seed.charCodeAt(0) * 37 + seed.charCodeAt(1 % seed.length) * 13) % 360;
-  return (
-    <div
-      className="absolute inset-0 flex items-center justify-center overflow-hidden"
-      style={{ background: `hsl(${hue} 35% 14%)` }}
-    >
-      {/* Grid pattern */}
-      <svg
-        className="absolute inset-0 w-full h-full opacity-20"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <defs>
-          <pattern id={`grid-${seed}`} width="24" height="24" patternUnits="userSpaceOnUse">
-            <path d="M 24 0 L 0 0 0 24" fill="none" stroke="currentColor" strokeWidth="0.5" />
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill={`url(#grid-${seed})`} />
-      </svg>
-      {/* Center icon */}
-      <Monitor
-        size={40}
-        style={{ color: `hsl(${hue} 70% 65%)` }}
-        className="drop-shadow-lg relative z-10"
-      />
-    </div>
+    if (!query) return courses;
+
+    return courses.filter((course) => {
+      const title = course.title?.toLocaleLowerCase(
+        isArabic ? "ar" : "en",
+      ) ?? "";
+
+      const description =
+        course.description?.toLocaleLowerCase(
+          isArabic ? "ar" : "en",
+        ) ?? "";
+
+      const teacher = course.teacher?.name?.toLocaleLowerCase(
+        isArabic ? "ar" : "en",
+      ) ?? "";
+
+      return (
+        title.includes(query) ||
+        description.includes(query) ||
+        teacher.includes(query)
+      );
+    });
+  }, [courses, search, isArabic]);
+
+  const totalModules = courses.reduce(
+    (total, course) => total + course._count.modules,
+    0,
   );
-}
 
-// ─── Course Card (grid) ────────────────────────────────────────────────────────
+  const totalLessons = courses.reduce(
+    (total, course) => total + course.totalLessons,
+    0,
+  );
 
-function CourseCard({ course, locale }: { course: CourseItem; locale: string }) {
-  const t = useTranslations();
-  const pct = progressPercent(course.progress);
-  const isRtl = locale === "ar";
+  const totalStudents = courses.reduce(
+    (total, course) => total + course._count.enrollments,
+    0,
+  );
 
   return (
-    <Link
-      href={`/${locale}/courses/${course.id}`}
-      className={cn(
-        "group flex flex-col rounded-xl border bg-card text-card-foreground",
-        "transition-all duration-200 hover:shadow-md hover:-translate-y-0.5",
-        "overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      )}
+    <main
+      dir={isRTL ? "rtl" : "ltr"}
+      className="mx-auto w-full max-w-7xl space-y-9 px-4 py-6 sm:px-6 lg:px-8 lg:py-10"
     >
-      {/* Thumbnail */}
-      <div className="relative aspect-video w-full overflow-hidden bg-muted">
-        {course.thumbnail ? (
-          <Image
-            src={course.thumbnail}
-            alt={course.title}
-            fill
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          />
-        ) : (
-          <CoursePlaceholder seed={course.id} />
-        )}
-
-        {/* Status badge */}
-        <div className={cn("absolute top-2", isRtl ? "left-2" : "right-2")}>
-          {course.isEnrolled ? (
-            <Badge className="bg-emerald-500/90 text-white border-0 text-[11px]">
-              <CheckCircle2 size={11} className="me-1" />
-              {t("courses.enrolled")}
-            </Badge>
-          ) : (
-            <Badge variant="secondary" className="text-[11px] backdrop-blur-sm bg-background/70">
-              <Lock size={10} className="me-1" />
-              {t("courses.notEnrolled")}
-            </Badge>
-          )}
-        </div>
-      </div>
-
-      {/* Body */}
-      <div className="flex flex-col flex-1 p-4 gap-3">
-        {/* Title */}
-        <h3 className="font-semibold text-sm leading-snug line-clamp-2 group-hover:text-primary transition-colors">
-          {course.title}
-        </h3>
-
-        {/* Description */}
-        {course.description && (
-          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-            {course.description}
-          </p>
-        )}
-
-        {/* Meta row */}
-        <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-auto">
-          <span className="flex items-center gap-1">
-            <Layers size={11} />
-            {course.moduleCount} {t("courses.modules")}
-          </span>
-          <span className="flex items-center gap-1">
-            <Users size={11} />
-            {course.enrollmentCount}
-          </span>
-        </div>
-
-        {/* Progress bar (if enrolled) */}
-        {course.isEnrolled && course.progress && (
-          <div className="space-y-1">
-            <div className="flex justify-between text-[11px] text-muted-foreground">
-              <span>{t("courses.progress", {percent: progressPercent(course.progress)})}</span>
-              <span className="font-medium tabular-nums">{pct}%</span>
+      {/* Page introduction */}
+      <section className="relative overflow-hidden rounded-3xl border border-border bg-card">
+        <div className="grid gap-8 p-6 sm:p-9 lg:grid-cols-[1fr_auto] lg:items-center lg:p-12">
+          <div className="max-w-2xl">
+            <div className="mb-5 flex items-center gap-2 text-sm font-semibold tracking-wide text-primary">
+              <span className="h-2 w-2 rounded-full bg-primary" />
+              {text.eyebrow}
             </div>
-            <Progress value={pct} className="h-1.5" />
+
+            <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+              {text.title}
+            </h1>
+
+            <p className="mt-5 max-w-xl text-sm leading-8 text-muted-foreground sm:text-base">
+              {text.subtitle}
+            </p>
+
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/50 px-3.5 py-2.5 text-sm">
+                <BookOpen className="size-4 text-primary" />
+                <span className="font-semibold text-foreground">
+                  {courses.length}
+                </span>
+                <span className="text-muted-foreground">
+                  {text.allCourses}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 rounded-xl border border-border bg-muted/50 px-3.5 py-2.5 text-sm">
+                <Layers3 className="size-4 text-primary" />
+                <span className="font-semibold text-foreground">
+                  {totalModules}
+                </span>
+                <span className="text-muted-foreground">
+                  {text.modules}
+                </span>
+              </div>
+            </div>
           </div>
-        )}
 
-        {/* Teacher */}
-        <div className="flex items-center gap-2 pt-1 border-t border-border/60">
-          <Avatar className="h-5 w-5">
-            <AvatarImage src={course.teacherImage ?? undefined} />
-            <AvatarFallback className="text-[9px]">
-              {teacherInitials(course.teacherName)}
-            </AvatarFallback>
-          </Avatar>
-          <span className="text-[11px] text-muted-foreground truncate">{course.teacherName}</span>
+          <div className="hidden lg:flex lg:items-center lg:justify-center">
+            <div className="flex size-44 items-center justify-center rounded-full border border-border bg-muted/50">
+              <div className="flex size-32 items-center justify-center rounded-full border border-primary/20 bg-background">
+                <GraduationCap className="size-16 text-primary" strokeWidth={1.25} />
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </Link>
-  );
-}
+      </section>
 
-// ─── Course Row (list) ────────────────────────────────────────────────────────
+      {/* Real statistics */}
+      <section
+        aria-label={text.overview}
+        className="grid grid-cols-1 gap-3 sm:grid-cols-3"
+      >
+        <StatCard
+          icon={BookOpen}
+          label={text.allCourses}
+          value={courses.length}
+        />
+        <StatCard
+          icon={Layers3}
+          label={text.lessons}
+          value={totalLessons}
+        />
+        <StatCard
+          icon={Users}
+          label={text.students}
+          value={totalStudents}
+        />
+      </section>
 
-function CourseRow({ course, locale }: { course: CourseItem; locale: string }) {
-  const t = useTranslations();
-  const pct = progressPercent(course.progress);
+      {/* Search and section heading */}
+      <section className="space-y-6">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold tracking-[0.18em] text-primary">
+              {text.catalog}
+            </p>
+            <h2 className="mt-2 text-2xl font-bold tracking-tight text-foreground">
+              {text.catalogTitle}
+            </h2>
+          </div>
 
-  return (
-    <Link
-      href={`/${locale}/courses/${course.id}`}
-      className={cn(
-        "group flex items-center gap-4 rounded-xl border bg-card px-4 py-3",
-        "transition-all duration-150 hover:shadow-sm hover:bg-accent/30",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      )}
-    >
-      {/* Thumbnail */}
-      <div className="relative h-14 w-20 shrink-0 overflow-hidden rounded-lg bg-muted">
-        {course.thumbnail ? (
-          <Image src={course.thumbnail} alt={course.title} fill className="object-cover" sizes="80px" />
+          <div className="relative w-full sm:max-w-sm">
+            <Search
+              className={`absolute top-1/2 size-4 -translate-y-1/2 text-muted-foreground ${
+                isRTL ? "right-4" : "left-4"
+              }`}
+            />
+            <input
+              type="search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder={text.search}
+              aria-label={text.search}
+              className={`h-12 w-full rounded-xl border border-border bg-card text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-ring/20 ${
+                isRTL ? "pr-11 pl-4" : "pl-11 pr-4"
+              }`}
+            />
+          </div>
+        </div>
+
+        {filteredCourses.length > 0 ? (
+          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {filteredCourses.map((course, index) => {
+              const courseHref =
+                `/${locale}/student/courses/${course.id}`;
+
+              return (
+                <article
+                  key={course.id}
+                  className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg hover:shadow-foreground/[0.04]"
+                >
+                  {/* Course cover */}
+                  <Link
+                    href={courseHref}
+                    aria-label={course.title}
+                    className="relative block aspect-[16/9] overflow-hidden bg-muted"
+                  >
+                    {course.thumbnail ? (
+                      <img
+                        src={course.thumbnail}
+                        alt={course.title}
+                        loading="lazy"
+                        className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                      />
+                    ) : (
+                      <div className="flex size-full items-center justify-center">
+                        <BookOpen
+                          className="size-14 text-muted-foreground/50"
+                          strokeWidth={1}
+                        />
+                      </div>
+                    )}
+
+                    <span className="absolute right-3 top-3 rounded-lg border border-border/70 bg-background/95 px-3 py-1.5 text-xs font-semibold text-foreground">
+                      {isArabic
+                        ? `كورس ${index + 1}`
+                        : `Course ${index + 1}`}
+                    </span>
+                  </Link>
+
+                  {/* Course information */}
+                  <div className="flex flex-1 flex-col p-5">
+                    <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground">
+                      <GraduationCap className="size-4 text-primary" />
+                      <span>{text.subject}</span>
+                    </div>
+
+                    <h3 className="text-lg font-bold leading-8 text-foreground transition-colors group-hover:text-primary">
+                      <Link href={courseHref}>
+                        {course.title}
+                      </Link>
+                    </h3>
+
+                    <p className="mt-2 line-clamp-3 min-h-[4.5rem] text-sm leading-7 text-muted-foreground">
+                      {course.description ||
+                        (isArabic
+                          ? "اكتشف محتوى الكورس وتعرّف على الدروس والوحدات التعليمية."
+                          : "Explore the course content, lessons, and learning modules.")}
+                    </p>
+
+                    {/* Instructor */}
+                    <div className="mt-4 flex items-center gap-3 border-t border-border pt-4">
+                      <div className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-muted">
+                        {course.teacher?.image ? (
+                          <img
+                            src={course.teacher.image}
+                            alt={course.teacher.name ?? ""}
+                            loading="lazy"
+                            className="size-full object-cover"
+                          />
+                        ) : (
+                          <GraduationCap className="size-4 text-muted-foreground" />
+                        )}
+                      </div>
+
+                      <div className="min-w-0">
+                        <p className="text-[11px] text-muted-foreground">
+                          {text.instructor}
+                        </p>
+                        <p className="truncate text-sm font-medium text-foreground">
+                          {course.teacher?.name ||
+                            (isArabic
+                              ? "فريق التدريس"
+                              : "Teaching team")}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Course stats */}
+                    <div className="mt-4 grid grid-cols-3 gap-2">
+                      <MiniStat
+                        icon={Layers3}
+                        value={course._count.modules}
+                        label={text.modules}
+                      />
+                      <MiniStat
+                        icon={BookOpen}
+                        value={course.totalLessons}
+                        label={text.lessons}
+                      />
+                      <MiniStat
+                        icon={Users}
+                        value={course._count.enrollments}
+                        label={text.students}
+                      />
+                    </div>
+
+                    {/* Learning action — no enrollment button */}
+                    <Link
+                      href={courseHref}
+                      className="mt-5 flex min-h-11 items-center justify-between gap-3 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+                    >
+                      <span>{text.start}</span>
+                      {isRTL ? (
+                        <ArrowUpLeft className="size-4" />
+                      ) : (
+                        <ArrowUpRight className="size-4" />
+                      )}
+                    </Link>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
         ) : (
-          <CoursePlaceholder seed={course.id} />
-        )}
-      </div>
+          <div className="flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card px-6 py-12 text-center">
+            <div className="flex size-14 items-center justify-center rounded-2xl bg-muted">
+              <SearchX className="size-6 text-muted-foreground" />
+            </div>
 
-      {/* Info */}
-      <div className="flex-1 min-w-0 space-y-1">
-        <div className="flex items-center gap-2 flex-wrap">
-          <h3 className="font-medium text-sm truncate group-hover:text-primary transition-colors">
-            {course.title}
-          </h3>
-          {course.isEnrolled && (
-            <Badge className="bg-emerald-500/90 text-white border-0 text-[10px] shrink-0">
-              {t("courses.enrolled")}
-            </Badge>
-          )}
-        </div>
+            <h3 className="mt-4 text-lg font-bold text-foreground">
+              {courses.length === 0
+                ? text.catalogTitle
+                : text.emptyTitle}
+            </h3>
 
-        <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <Layers size={11} />
-            {course.moduleCount} {t("courses.modules")}
-          </span>
-          <span className="flex items-center gap-1">
-            <Users size={11} />
-            {course.enrollmentCount}
-          </span>
-          <span className="flex items-center gap-1 truncate">
-            <BookOpen size={11} />
-            {course.teacherName}
-          </span>
-        </div>
+            <p className="mt-2 max-w-sm text-sm leading-7 text-muted-foreground">
+              {courses.length === 0
+                ? text.noCourses
+                : text.emptyDescription}
+            </p>
 
-        {course.isEnrolled && course.progress && (
-          <div className="flex items-center gap-2">
-            <Progress value={pct} className="h-1 flex-1" />
-            <span className="text-[11px] text-muted-foreground tabular-nums shrink-0">{pct}%</span>
+            {search && courses.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="mt-4 rounded-lg border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+              >
+                {text.clear}
+              </button>
+            )}
           </div>
         )}
-      </div>
-
-      {/* Arrow */}
-      <ArrowRight
-        size={16}
-        className="shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
-      />
-    </Link>
+      </section>
+    </main>
   );
 }
 
-// ─── Skeleton loaders ─────────────────────────────────────────────────────────
-
-function CardSkeleton() {
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: number;
+}) {
   return (
-    <div className="rounded-xl border bg-card overflow-hidden">
-      <Skeleton className="aspect-video w-full" />
-      <div className="p-4 space-y-3">
-        <Skeleton className="h-4 w-3/4" />
-        <Skeleton className="h-3 w-full" />
-        <Skeleton className="h-3 w-2/3" />
-        <Skeleton className="h-2 w-full mt-2" />
+    <div className="flex items-center gap-4 rounded-2xl border border-border bg-card p-5">
+      <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-muted text-primary">
+        <Icon className="size-5" />
       </div>
-    </div>
-  );
-}
 
-// ─── Empty state ──────────────────────────────────────────────────────────────
-
-function EmptyState({ query }: { query: string }) {
-  const t = useTranslations();
-  return (
-    <div className="col-span-full flex flex-col items-center justify-center py-20 gap-4 text-center">
-      <div className="relative">
-        <div className="w-20 h-20 rounded-2xl bg-muted flex items-center justify-center">
-          <Cpu size={36} className="text-muted-foreground" />
-        </div>
-        <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-background border-2 border-border flex items-center justify-center">
-          <Search size={12} className="text-muted-foreground" />
-        </div>
-      </div>
       <div>
-        <p className="font-medium text-sm">{t("courses.emptyTitle")}</p>
-        <p className="text-xs text-muted-foreground mt-1">
-          {query ? t("courses.emptySearch", { query }) : t("courses.emptyDesc")}
+        <p className="text-sm text-muted-foreground">{label}</p>
+        <p className="mt-1 text-2xl font-bold tabular-nums text-foreground">
+          {value.toLocaleString()}
         </p>
       </div>
     </div>
   );
 }
 
-// ─── Stats bar ────────────────────────────────────────────────────────────────
-
-function StatsBar({ courses, userId }: { courses: CourseItem[]; userId: string | null }) {
-  const t = useTranslations();
-  const enrolled = courses.filter((c) => c.isEnrolled).length;
-  const totalStudents = courses.reduce((sum, c) => sum + c.enrollmentCount, 0);
-
-  return (
-    <div className="flex flex-wrap gap-4 sm:gap-8 text-sm">
-      <div className="flex flex-col">
-        <span className="text-2xl font-bold tabular-nums">{courses.length}</span>
-        <span className="text-xs text-muted-foreground">{t("courses.statTotal")}</span>
-      </div>
-      {userId && (
-        <div className="flex flex-col">
-          <span className="text-2xl font-bold tabular-nums text-emerald-500">{enrolled}</span>
-          <span className="text-xs text-muted-foreground">{t("courses.statEnrolled")}</span>
-        </div>
-      )}
-      <div className="flex flex-col">
-        <span className="text-2xl font-bold tabular-nums">{totalStudents}</span>
-        <span className="text-xs text-muted-foreground">{t("courses.statStudents")}</span>
-      </div>
-    </div>
-  );
-}
-
-// ─── Main CoursesClient ───────────────────────────────────────────────────────
-
-export default function CoursesClient({
-  courses,
-  userId,
+function MiniStat({
+  icon: Icon,
+  value,
+  label,
 }: {
-  courses: CourseItem[];
-  userId: string | null;
+  icon: React.ComponentType<{ className?: string }>;
+  value: number;
+  label: string;
 }) {
-  const t = useTranslations();
-  const locale = useLocale();
-  const isRtl = locale === "ar";
-
-  const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<SortKey>("newest");
-  const [view, setView] = useState<ViewMode>("grid");
-  const [filterEnrolled, setFilterEnrolled] = useState(false);
-
-  const filtered = useMemo(() => {
-    let list = [...courses];
-
-    // Text search
-    if (query.trim()) {
-      const q = query.toLowerCase();
-      list = list.filter(
-        (c) =>
-          c.title.toLowerCase().includes(q) ||
-          c.description?.toLowerCase().includes(q) ||
-          c.teacherName.toLowerCase().includes(q)
-      );
-    }
-
-    // Enrolled filter
-    if (filterEnrolled) list = list.filter((c) => c.isEnrolled);
-
-    // Sort
-    if (sort === "newest") list.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-    else if (sort === "popular") list.sort((a, b) => b.enrollmentCount - a.enrollmentCount);
-    else if (sort === "title") list.sort((a, b) => a.title.localeCompare(b.title));
-
-    return list;
-  }, [courses, query, sort, filterEnrolled]);
-
   return (
-    <div className="min-h-screen bg-background" dir={isRtl ? "rtl" : "ltr"}>
-      <Navbar />
-      {/* ── Page hero ─────────────────────────────────────────── */}
-      <div className="relative overflow-hidden border-b bg-card">
-        {/* Subtle dot pattern */}
-        <div
-          className="absolute inset-0 opacity-[0.04] dark:opacity-[0.07]"
-          style={{
-            backgroundImage: "radial-gradient(circle, currentColor 1px, transparent 1px)",
-            backgroundSize: "24px 24px",
-          }}
-        />
-        {/* Gradient fade */}
-        <div className="absolute inset-0 bg-linear-to-b from-transparent to-card pointer-events-none" />
-
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 py-10 sm:py-14">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-primary text-sm font-medium">
-                <Monitor size={15} />
-                <span>{t("courses.dept")}</span>
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                {t("courses.pageTitle")}
-              </h1>
-              <p className="text-sm text-muted-foreground max-w-lg">
-                {t("courses.pageSubtitle")}
-              </p>
-            </div>
-            <StatsBar courses={courses} userId={userId} />
-          </div>
-        </div>
-      </div>
-
-      {/* ── Toolbar ────────────────────────────────────────────── */}
-      <div className="sticky top-14 z-30 border-b bg-background/90 backdrop-blur-md">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-3 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          {/* Search */}
-          <div className="relative flex-1">
-            <Search
-              size={15}
-              className={cn(
-                "absolute top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none",
-                isRtl ? "right-3" : "left-3"
-              )}
-            />
-            <Input
-              placeholder={t("courses.searchPlaceholder")}
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className={cn("h-9 text-sm", isRtl ? "pr-9" : "pl-9")}
-            />
-          </div>
-
-          {/* Right controls */}
-          <div className="flex items-center gap-2 shrink-0">
-            {/* Enrolled filter — only for logged-in users */}
-            {userId && (
-              <Button
-                variant={filterEnrolled ? "default" : "outline"}
-                size="sm"
-                className="h-9 text-xs gap-1.5"
-                onClick={() => setFilterEnrolled((v) => !v)}
-              >
-                <CheckCircle2 size={13} />
-                {t("courses.myCoursesBtn")}
-              </Button>
-            )}
-
-            {/* Sort */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="h-9 text-xs gap-1.5">
-                  <Filter size={13} />
-                  {t(`courses.sort.${sort}`)}
-                  <ChevronDown size={12} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align={isRtl ? "start" : "end"} className="min-w-35">
-                <DropdownMenuRadioGroup
-                  value={sort}
-                  onValueChange={(v) => setSort(v as SortKey)}
-                >
-                  {(["newest", "popular", "title"] as SortKey[]).map((k) => (
-                    <DropdownMenuRadioItem key={k} value={k} className="text-xs">
-                      {t(`courses.sort.${k}`)}
-                    </DropdownMenuRadioItem>
-                  ))}
-                </DropdownMenuRadioGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* View toggle */}
-            <div className="flex rounded-md border overflow-hidden">
-              <button
-                onClick={() => setView("grid")}
-                className={cn(
-                  "h-9 w-9 flex items-center justify-center transition-colors",
-                  view === "grid"
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-accent"
-                )}
-                aria-label="Grid view"
-              >
-                <LayoutGrid size={14} />
-              </button>
-              <button
-                onClick={() => setView("list")}
-                className={cn(
-                  "h-9 w-9 flex items-center justify-center transition-colors border-s",
-                  view === "list"
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-accent"
-                )}
-                aria-label="List view"
-              >
-                <List size={14} />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Content ────────────────────────────────────────────── */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
-        {/* Result count */}
-        {query && (
-          <p className="text-xs text-muted-foreground mb-5">
-            {t("courses.resultCount", { count: filtered.length, query })}
-          </p>
-        )}
-
-        {filtered.length === 0 ? (
-          <div className={view === "grid" ? "grid grid-cols-1" : "flex flex-col"}>
-            <EmptyState query={query} />
-          </div>
-        ) : view === "grid" ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filtered.map((course) => (
-              <CourseCard key={course.id} course={course} locale={locale} />
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {filtered.map((course) => (
-              <CourseRow key={course.id} course={course} locale={locale} />
-            ))}
-          </div>
-        )}
-      </div>
+    <div className="min-w-0 rounded-xl bg-muted/60 px-2 py-3 text-center">
+      <Icon className="mx-auto size-4 text-muted-foreground" />
+      <p className="mt-2 truncate text-sm font-bold tabular-nums text-foreground">
+        {value.toLocaleString()}
+      </p>
+      <p className="mt-1 truncate text-[10px] text-muted-foreground">
+        {label}
+      </p>
     </div>
   );
 }

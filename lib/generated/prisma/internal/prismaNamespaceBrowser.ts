@@ -160,6 +160,7 @@ export type AuthenticatorScalarFieldEnum = (typeof AuthenticatorScalarFieldEnum)
 export const CourseScalarFieldEnum = {
   id: 'id',
   title: 'title',
+  titleEnglish: 'titleEnglish',
   description: 'description',
   teacherId: 'teacherId',
   thumbnail: 'thumbnail',
@@ -173,6 +174,7 @@ export type CourseScalarFieldEnum = (typeof CourseScalarFieldEnum)[keyof typeof 
 export const ModuleScalarFieldEnum = {
   id: 'id',
   title: 'title',
+  titleEnglish: 'titleEnglish',
   description: 'description',
   courseId: 'courseId',
   level: 'level',
