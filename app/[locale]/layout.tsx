@@ -9,9 +9,9 @@ import { getLocale, setRequestLocale } from "next-intl/server";
 import { DirectionProvider } from "@/components/ui/direction"
 
 export const metadata: Metadata = {
-  title: "Holo Learn – Hologram Programming Education",
+  title: "Optic Learn – Hologram Programming Education",
   description:
-    "Holo Learn is a user-powered adaptive coding platform for all learners, including those with disabilities.",
+    "Optic Learn is a user-powered adaptive coding platform for all learners, including those with disabilities.",
 };
 
 export default async function RootLayout({

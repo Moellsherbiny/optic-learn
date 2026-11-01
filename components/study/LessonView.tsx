@@ -138,7 +138,7 @@ export function LessonView({
         result.data.postQuizId
       ) {
         router.push(
-          `/courses/${course.id}/quizzes/${result.data.postQuizId}`,
+          `/quizzes/${result.data.postQuizId}`,
         );
         return;
       }
