@@ -104,8 +104,8 @@ export function StudentQuizListClient({ initialQuizzes }: { initialQuizzes: Quiz
                 <Link
                   href={
                     attempted
-                      ? `/student/quizzes/results/${attempt.id}`
-                      : `/student/quizzes/${quiz.id}`
+                      ? `/quizzes/results/${attempt.id}`
+                      : `/quizzes/${quiz.id}`
                   }
                   className="mt-auto"
                 >

@@ -120,7 +120,7 @@ export function AppSidebar({
         },
         {
           title: sidebarItems("myQuizzes"),
-          url: "/quizzes",
+          url: "/student/quizzes",
           icon: ClipboardList,
           exact: true,
         },
