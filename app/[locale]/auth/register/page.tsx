@@ -2,10 +2,8 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import Link from "next/link";
 import {
-  ArrowLeft,
-  ArrowRight,
+
   GraduationCap,
   ShieldCheck,
   UserRoundPlus,
@@ -17,7 +15,6 @@ export default function RegisterPage() {
   const t = useTranslations("auth");
   const locale = useLocale();
   const isArabic = locale.startsWith("ar");
-  const DirectionArrow = isArabic ? ArrowLeft : ArrowRight;
 
   return (
     <div className="w-full" dir={isArabic ? "rtl" : "ltr"}>
