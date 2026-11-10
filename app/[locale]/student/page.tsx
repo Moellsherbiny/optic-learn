@@ -7,7 +7,6 @@ import { useLocale, useTranslations } from "next-intl";
 import {
   ArrowLeft,
   ArrowRight,
-  ArrowUpLeft,
   BookOpen,
   CheckCircle2,
   GraduationCap,
@@ -18,25 +17,24 @@ import {
 } from "lucide-react";
 
 import { getStudentDashboardData } from "@/actions/student/dashboard";
-import { cn } from "@/lib/utils";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-
+import Image from "next/image";
 export default function StudentDashboard() {
   const t = useTranslations("Student");
   const locale = useLocale();
   const { data: session, status } = useSession();
-
   const isArabic = locale.startsWith("ar");
   const DirectionArrow = isArabic ? ArrowLeft : ArrowRight;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const fetchData = useCallback(async () => {
     if (!session?.user?.id) {
       setLoading(false);
@@ -97,22 +95,23 @@ export default function StudentDashboard() {
     };
   }, [session?.user?.id, status]);
 
-  const courses = data?.courses ?? [];
-  const course = courses[0] ?? null;
-  const stats = data?.stats ?? {};
+  
+  const course = data?.courses?.[0] ?? null;
+
   const latestLesson = data?.latestLesson;
 
-  const courseProgress = Math.min(
-    100,
-    Math.max(0, Number(course?.percentage ?? 0)),
-  );
+ const completedLessons = Number(
+  course?.completedLessons ?? 0
+);
 
-  const completedLessons = Number(
-    course?.completedLessons ?? stats.totalLessonsCompleted ?? 0,
-  );
+const totalLessons = Number(
+  course?.totalLessons ?? 0
+);
 
-  const totalLessons = Number(course?.totalLessons ?? 0);
-
+const courseProgress =
+  totalLessons > 0
+    ? Math.round((completedLessons / totalLessons) * 100)
+    : 0;
   const lessonHref = latestLesson?.id
     ? `/${locale}courses/lessons/${latestLesson.id}`
     : course?.id
@@ -195,139 +194,139 @@ export default function StudentDashboard() {
       dir={isArabic ? "rtl" : "ltr"}
       className="mx-auto w-full max-w-7xl space-y-8 p-4 pb-10 sm:p-6 lg:space-y-10 lg:p-8"
     >
-
-{/* Welcome section */}
-<section className="relative isolate overflow-hidden rounded-[28px] border border-border bg-card shadow-sm">
-  {/* Background decoration */}
-  <div
-    aria-hidden="true"
-    className="pointer-events-none absolute inset-0 overflow-hidden"
-  >
-    <div className="absolute inset-y-0 end-0 w-2/3 bg-[radial-gradient(ellipse_at_75%_30%,var(--primary)_0%,transparent_65%)] opacity-[0.07]" />
-
-    <div className="absolute -end-32 -top-40 size-[440px] rounded-full border border-primary/[0.08]" />
-    <div className="absolute -end-16 -top-24 size-[320px] rounded-full border border-primary/[0.08]" />
-
-    <div className="absolute -end-20 bottom-[-180px] size-[340px] rounded-full bg-primary/[0.05] blur-3xl" />
-
-    <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-  </div>
-
-  <div className="relative grid gap-8 p-6 sm:p-8 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-center lg:gap-12 lg:p-10">
-    {/* Welcome content */}
-    <div className="max-w-2xl">
-      <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/[0.06] px-3 py-1.5 text-xs font-medium text-primary">
-        <Sparkles className="size-3.5" />
-        {isArabic ? "مساحة التعلم الخاصة بك" : "YOUR LEARNING SPACE"}
-      </div>
-
-      <h1 className="text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-[42px]">
-        {isArabic ? "أهلًا، " : "Welcome back, "}
-        <span className="text-primary">{firstName}</span>
-        <span className="text-foreground">
-          {isArabic ? "!" : "!"}
-        </span>
-      </h1>
-
-      <p className="mt-4 max-w-xl text-sm leading-7 text-muted-foreground sm:text-base">
-        {course
-          ? isArabic
-            ? "استمر في رحلتك التعليمية، كل درس تنهيه يقربك أكثر من هدفك. واصل التقدم!"
-            : "Your learning journey continues. Every lesson you complete brings you one step closer to your goal. Keep going!"
-          : isArabic
-            ? "رحلتك التعليمية تبدأ من هنا. استعد لاكتساب المعرفة وتطوير مهاراتك خطوة بخطوة."
-            : "Your learning journey starts here. Get ready to build knowledge and develop your skills, one step at a time."}
-      </p>
-
-      {/* Course status */}
-      {course && (
-        <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3 text-xs text-muted-foreground">
-          <div className="inline-flex items-center gap-2">
-            <span className="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <GraduationCap className="size-4" />
-            </span>
-            <span>
-              {data.userLevel ?? (isArabic ? "المتعلم" : "Learner")}
-            </span>
-          </div>
-
-          <span className="h-4 w-px bg-border" />
-
-          <div className="inline-flex items-center gap-2">
-            <BookOpen className="size-4 text-primary" />
-            <span className="max-w-[180px] truncate font-medium text-foreground">
-              {isArabic ? course.title : course.titleEn || course.title}
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Primary action */}
-      <div className="mt-7 flex flex-wrap items-center gap-3">
-        <Button
-          asChild
-          disabled={!course}
-          className="h-11 gap-2 rounded-xl px-5 shadow-sm shadow-primary/10"
+      {/* Welcome section */}
+      <section className="relative isolate overflow-hidden rounded-[28px] border border-border bg-card shadow-sm">
+        {/* Background decoration */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 overflow-hidden"
         >
-          <Link href={lessonHref}>
-            {latestLesson
-              ? isArabic
-                ? "متابعة التعلم"
-                : "Continue learning"
-              : isArabic
-                ? "ابدأ التعلم"
-                : "Start learning"}
-            <DirectionArrow className="size-4" />
-          </Link>
-        </Button>
+          <div className="absolute inset-y-0 inset-e-0 w-2/3 bg-[radial-gradient(ellipse_at_75%_30%,var(--primary)_0%,transparent_65%)] opacity-[0.07]" />
 
-        {course && (
-          <span className="text-xs text-muted-foreground">
-            {isArabic
-              ? "واصل من حيث توقفت"
-              : "Pick up where you left off"}
-          </span>
-        )}
-      </div>
-    </div>
+          <div className="absolute -inset-e-32 -top-40 size-110 rounded-full border border-primary/8" />
+          <div className="absolute -inset-e-16 -top-24 size-80 rounded-full border border-primary/8" />
 
-    {/* Progress visualization */}
-    <div className="relative mx-auto flex w-full max-w-[260px] items-center justify-center lg:mx-0 lg:justify-self-end">
-      <div className="relative flex aspect-square w-full items-center justify-center">
-        {/* Decorative rings */}
-        <div className="absolute inset-1 rounded-full border border-dashed border-primary/20" />
-        <div className="absolute inset-5 rounded-full border border-primary/10" />
-        <div className="absolute inset-10 rounded-full bg-primary/[0.035]" />
+          <div className="absolute -inset-e-20 -bottom-45 size-85 rounded-full bg-primary/5 blur-3xl" />
 
-        {/* Main progress card */}
-        <div className="relative z-10 flex size-36 flex-col items-center justify-center rounded-[32px] border border-border/80 bg-background/90 shadow-lg shadow-primary/[0.04] backdrop-blur-sm">
-          <BookOpen className="mb-2 size-7 text-primary" strokeWidth={1.7} />
-
-          <span className="text-4xl font-bold tracking-tight tabular-nums">
-            {courseProgress}%
-          </span>
-
-          <span className="mt-1 text-[11px] font-medium text-muted-foreground">
-            {isArabic ? "نسبة الإنجاز" : "Completed"}
-          </span>
+          <div className="absolute inset-x-0 bottom-0 h-px bg-linear-to-r from-transparent via-primary/30 to-transparent" />
         </div>
 
-        {/* Floating achievement icons */}
-        <div className="absolute end-3 top-7 z-20 flex size-11 items-center justify-center rounded-2xl border border-border bg-card shadow-md">
-          <Target className="size-5 text-primary" />
-        </div>
+        <div className="relative grid gap-8 p-6 sm:p-8 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-center lg:gap-12 lg:p-10">
+          {/* Welcome content */}
+          <div className="max-w-2xl">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/6 px-3 py-1.5 text-xs font-medium text-primary">
+              <Sparkles className="size-3.5" />
+              {isArabic ? "مساحة التعلم الخاصة بك" : "YOUR LEARNING SPACE"}
+            </div>
 
-        <div className="absolute bottom-7 start-3 z-20 flex size-11 items-center justify-center rounded-2xl border border-border bg-card shadow-md">
-          <Trophy className="size-5 text-primary" />
-        </div>
+            <h1 className="text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-[42px]">
+              {isArabic ? "أهلًا، " : "Welcome back, "}
+              <span className="text-primary">{firstName}</span>
+              <span className="text-foreground">{isArabic ? "!" : "!"}</span>
+            </h1>
 
-        {/* Small decorative dot */}
-        <div className="absolute end-12 bottom-3 size-2 rounded-full bg-primary/50" />
-        <div className="absolute start-10 top-5 size-1.5 rounded-full bg-primary/30" />
-      </div>
-    </div>
-  </div>
-</section>
+            <p className="mt-4 max-w-xl text-sm leading-7 text-muted-foreground sm:text-base">
+              {course
+                ? isArabic
+                  ? "استمر في رحلتك التعليمية، كل درس تنهيه يقربك أكثر من هدفك. واصل التقدم!"
+                  : "Your learning journey continues. Every lesson you complete brings you one step closer to your goal. Keep going!"
+                : isArabic
+                  ? "رحلتك التعليمية تبدأ من هنا. استعد لاكتساب المعرفة وتطوير مهاراتك خطوة بخطوة."
+                  : "Your learning journey starts here. Get ready to build knowledge and develop your skills, one step at a time."}
+            </p>
+
+            {/* Course status */}
+            {course && (
+              <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3 text-xs text-muted-foreground">
+                <div className="inline-flex items-center gap-2">
+                  <span className="flex size-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                    <GraduationCap className="size-4" />
+                  </span>
+                  <span>
+                    {data.userLevel ?? (isArabic ? "المتعلم" : "Learner")}
+                  </span>
+                </div>
+
+                <span className="h-4 w-px bg-border" />
+
+                <div className="inline-flex items-center gap-2">
+                  <BookOpen className="size-4 text-primary" />
+                  <span className="max-w-45 truncate font-medium text-foreground">
+                    {isArabic ? course.title : course.titleEn || course.title}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* Primary action */}
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <Button
+                asChild
+                disabled={!course}
+                className="h-11 gap-2 rounded-xl px-5 shadow-sm shadow-primary/10"
+              >
+                <Link href={lessonHref}>
+                  {latestLesson
+                    ? isArabic
+                      ? "متابعة التعلم"
+                      : "Continue learning"
+                    : isArabic
+                      ? "ابدأ التعلم"
+                      : "Start learning"}
+                  <DirectionArrow className="size-4" />
+                </Link>
+              </Button>
+
+              {course && (
+                <span className="text-xs text-muted-foreground">
+                  {isArabic
+                    ? "واصل من حيث توقفت"
+                    : "Pick up where you left off"}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Progress visualization */}
+          <div className="relative mx-auto flex w-full max-w-65 items-center justify-center lg:mx-0 lg:justify-self-end">
+            <div className="relative flex aspect-square w-full items-center justify-center">
+              {/* Decorative rings */}
+              <div className="absolute inset-1 rounded-full border border-dashed border-primary/20" />
+              <div className="absolute inset-5 rounded-full border border-primary/10" />
+              <div className="absolute inset-10 rounded-full bg-primary/[0.035]" />
+
+              {/* Main progress card */}
+              <div className="relative z-10 flex size-36 flex-col items-center justify-center rounded-[32px] border border-border/80 bg-background/90 shadow-lg shadow-primary/4 backdrop-blur-sm">
+                <BookOpen
+                  className="mb-2 size-7 text-primary"
+                  strokeWidth={1.7}
+                />
+
+                <span className="text-4xl font-bold tracking-tight tabular-nums">
+                  {courseProgress}%
+                </span>
+
+                <span className="mt-1 text-[11px] font-medium text-muted-foreground">
+                  {isArabic ? "نسبة الإنجاز" : "Completed"}
+                </span>
+              </div>
+
+              {/* Floating achievement icons */}
+              <div className="absolute inset-e-3 top-7 z-20 flex size-11 items-center justify-center rounded-2xl border border-border bg-card shadow-md">
+                <Target className="size-5 text-primary" />
+              </div>
+
+              <div className="absolute bottom-7 inset-s-3 z-20 flex size-11 items-center justify-center rounded-2xl border border-border bg-card shadow-md">
+                <Trophy className="size-5 text-primary" />
+              </div>
+
+              {/* Small decorative dot */}
+              <div className="absolute inset-e-12 bottom-3 size-2 rounded-full bg-primary/50" />
+              <div className="absolute inset-s-10 top-5 size-1.5 rounded-full bg-primary/30" />
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Statistics */}
       <section className="grid gap-4 sm:grid-cols-3">
@@ -460,7 +459,7 @@ export default function StudentDashboard() {
         />
 
         {course ? (
-          <Card className="group overflow-hidden rounded-2xl border-border/80 bg-card py-0 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/[0.04]">
+          <Card className="group overflow-hidden rounded-2xl border-border/80 bg-card py-0 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/4">
             <Link
               href={courseHref}
               className="grid md:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]"
@@ -471,9 +470,9 @@ export default function StudentDashboard() {
               }
             >
               {/* Course thumbnail */}
-              <div className="relative aspect-[16/9] overflow-hidden border-b border-border/60 bg-muted md:aspect-auto md:min-h-[280px] md:border-b-0 md:border-e">
+              <div className="relative aspect-video overflow-hidden border-b border-border/60 bg-muted md:aspect-auto md:min-h-70 md:border-b-0 md:border-e">
                 {course.thumbnail ? (
-                  <img
+                  <Image
                     src={course.thumbnail}
                     alt={course.title}
                     loading="lazy"
@@ -534,7 +533,7 @@ export default function StudentDashboard() {
                       {completedLessons}/{totalLessons} {t("Course.lessons")}
                     </span>
 
-                    <span className="inline-flex items-center gap-1 font-medium text-primary transition-transform group-hover:translate-x-[-2px]">
+                    <span className="inline-flex items-center gap-1 font-medium text-primary transition-transform group-hover:-translate-x-0.5">
                       {isArabic ? "فتح الكورس" : "Open course"}
                       <DirectionArrow className="size-3.5" />
                     </span>

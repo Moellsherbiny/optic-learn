@@ -13,17 +13,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Search, CheckCircle2, Lock } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { getStudentQuizzes } from "@/actions/student/quiz";
 import { useTranslations } from "next-intl";
 
 type Quiz = Awaited<ReturnType<typeof getStudentQuizzes>>[number];
 
-const difficultyColor = {
-  EASY: "bg-green-100 text-green-800",
-  MEDIUM: "bg-yellow-100 text-yellow-800",
-  HARD: "bg-red-100 text-red-800",
-};
 
 export function StudentQuizListClient({ initialQuizzes }: { initialQuizzes: Quiz[] }) {
   const [search, setSearch] = useState("");

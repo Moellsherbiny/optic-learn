@@ -1,90 +1,149 @@
+
 "use server";
 
-import { prisma } from "@/lib/prisma"; 
+import { prisma } from "@/lib/prisma";
 
 export async function getStudentDashboardData(userId: string) {
   try {
-    // 1. Get User Level and Profile
+    // 1. Get user
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { level: true, name: true }
+      select: {
+        level: true,
+        name: true,
+      },
     });
 
-    // 2. Get Enrolled Courses with Progress
-    const enrollments = await prisma.enrollment.findMany({
+    // 2. Get enrolled course
+    const enrollment = await prisma.enrollment.findFirst({
       where: { studentId: userId },
       include: {
         course: {
           include: {
-            teacher: { select: { name: true } },
+            teacher: {
+              select: { name: true },
+            },
             modules: {
               include: {
                 lessons: {
-                  include: {
+                  select: {
+                    id: true,
+                    title: true,
                     progress: {
-                      where: { studentId: userId }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+                      where: { studentId: userId },
+                      select: {
+                        completed: true,
+                        updatedAt: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
 
-    const courses = enrollments.map((enrollment) => {
-      const allLessons = enrollment.course.modules.flatMap(m => m.lessons);
-      const totalLessons = allLessons.length;
-      const completedLessons = allLessons.filter(l => l.progress[0]?.completed).length;
-      const percentage = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
+    // 3. Calculate course progress
+    const courses = enrollment
+      ? (() => {
+          const course = enrollment.course;
 
-      return {
-        id: enrollment.course.id,
-        title: enrollment.course.title,
-        titleEn: enrollment.course.titleEnglish,
-        instructor: enrollment.course.teacher.name,
-        thumbnail: enrollment.course.thumbnail,
-        totalLessons,
-        completedLessons,
-        percentage
-      };
-    });
+          const allLessons = course.modules.flatMap(
+            (module) => module.lessons
+          );
 
-    // 3. Get the "Latest" Lesson (Last updated progress)
+          const totalLessons = allLessons.length;
+
+          const completedLessons = allLessons.filter(
+            (lesson) => lesson.progress.some(
+              (progress) => progress.completed
+            )
+          ).length;
+
+          const percentage =
+            totalLessons > 0
+              ? Math.round(
+                  (completedLessons / totalLessons) * 100
+                )
+              : 0;
+
+          return [{
+            id: course.id,
+            title: course.title,
+            titleEn: course.titleEnglish,
+            instructor: course.teacher?.name ?? "",
+            thumbnail: course.thumbnail,
+            totalLessons,
+            completedLessons,
+            percentage,
+          }];
+        })()
+      : [];
+
+    // 4. Get latest lesson progress
     const latestProgressRecord = await prisma.progress.findFirst({
-      where: { studentId: userId },
-      orderBy: { updatedAt: 'desc' },
+      where: {
+        studentId: userId,
+        lesson: {
+          module: {
+            course: {
+              enrollments: {
+                some: { studentId: userId },
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
       include: {
         lesson: {
           include: {
             module: {
-              include: { course: true }
-            }
-          }
-        }
-      }
+              include: {
+                course: true,
+              },
+            },
+          },
+        },
+      },
     });
 
-    // 4. Global Stats
-    const completedCoursesCount = courses.filter(c => c.percentage === 100).length;
+    // 5. Global stats
+    const completedCourses = courses.filter(
+      (course) =>
+        course.totalLessons > 0 &&
+        course.completedLessons === course.totalLessons
+    ).length;
+
+    const totalLessonsCompleted = courses.reduce(
+      (sum, course) => sum + course.completedLessons,
+      0
+    );
+
+    // 6. Latest lesson
+    const latestLesson = latestProgressRecord
+      ? {
+          id: latestProgressRecord.lesson.id,
+          title: latestProgressRecord.lesson.title,
+          moduleTitle: latestProgressRecord.lesson.module.title,
+          courseTitle: latestProgressRecord.lesson.module.course.title,
+          percentage: latestProgressRecord.completed ? 100 : 0,
+        }
+      : null;
 
     return {
-      userLevel: user?.level || "BEGINNER",
+      userLevel: user?.level ?? "BEGINNER",
       courses,
       stats: {
-        completedCourses: completedCoursesCount,
-        // Since watchTime isn't in your schema, we'll use lessons completed as a proxy or 0
-        totalLessonsCompleted: courses.reduce((acc, c) => acc + c.completedLessons, 0)
+        completedCourses,
+        totalLessonsCompleted,
       },
-      latestLesson: latestProgressRecord ? {
-        title: latestProgressRecord.lesson.title,
-        moduleTitle: latestProgressRecord.lesson.module.title,
-        courseTitle: latestProgressRecord.lesson.module.course.title,
-        percentage: courses.find(c => c.id === latestProgressRecord.lesson.module.courseId)?.percentage || 0
-      } : null
+      latestLesson,
     };
-
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch dashboard data.");

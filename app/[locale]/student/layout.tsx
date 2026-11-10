@@ -3,7 +3,6 @@ import type { CSSProperties, ReactNode } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
-  ArrowUpRight,
   MessageCircleMore,
 } from "lucide-react";
 
@@ -42,11 +41,10 @@ export default async function DashboardLayout({
   }
 
   const unreadMessagesCount = await getUnreadMessagesCount();
-  const userName = session.user.name?.trim() || "User";
-  const userInitial = userName.charAt(0).toUpperCase();
+  
+
 
   const messagesHref = `/${locale}/chat`;
-  const profileHref = `/${locale}/profile`;
 
   return (
     <SidebarProvider>
@@ -104,13 +102,13 @@ export default async function DashboardLayout({
                 className="group relative inline-flex size-9 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
                 <MessageCircleMore
-                  className="size-[18px]"
+                  className="size-4.5"
                   strokeWidth={1.8}
                 />
 
                 {unreadMessagesCount.success &&
                   unreadMessagesCount.count > 0 && (
-                    <span className="absolute -end-1.5 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-background bg-destructive px-1 text-[9px] font-bold leading-none text-destructive-foreground">
+                    <span className="absolute -inset-e-1.5 -top-1.5 flex h-4.5 min-w-4.5 items-center justify-center rounded-full border-2 border-background bg-destructive px-1 text-[9px] font-bold leading-none text-destructive-foreground">
                       {unreadMessagesCount.count > 99
                         ? "99+"
                         : unreadMessagesCount.count}
